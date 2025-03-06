@@ -2172,6 +2172,17 @@ namespace ManagedDoom
                 return;
             }
 
+            if (--actor.MoveCount < 0 || !Move(actor))
+            {
+                NewChaseDir(actor);
+            }
+
+            // Make active sound.
+            if (actor.Info.ActiveSound != 0 && world.Random.Next() < 3)
+            {
+                world.StartSound(actor, actor.Info.ActiveSound, SfxType.Voice);
+            }
+
         }
 
         public void ZombieAttack(Mobj actor)
