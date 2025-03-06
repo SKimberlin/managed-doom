@@ -992,7 +992,20 @@ namespace ManagedDoom
             new MobjStateDef(963, Sprite.TLP2, 32768, 4, null, null, MobjState.Tech2Lamp2, 0, 0), // State.Tech2Lamp
             new MobjStateDef(964, Sprite.TLP2, 32769, 4, null, null, MobjState.Tech2Lamp3, 0, 0), // State.Tech2Lamp2
             new MobjStateDef(965, Sprite.TLP2, 32770, 4, null, null, MobjState.Tech2Lamp4, 0, 0), // State.Tech2Lamp3
-            new MobjStateDef(966, Sprite.TLP2, 32771, 4, null, null, MobjState.Tech2Lamp, 0, 0) // State.Tech2Lamp4
+            new MobjStateDef(966, Sprite.TLP2, 32771, 4, null, null, MobjState.Tech2Lamp, 0, 0), // State.Tech2Lamp4
+            new MobjStateDef(967, Sprite.TROO, 0, 10, null, ma.ZombieLook, MobjState.TrooStnd2, 0, 0), // State.ZombieStnd
+            new MobjStateDef(968, Sprite.TROO, 1, 10, null, ma.ZombieLook, MobjState.TrooStnd, 0, 0), // State.ZombieStnd2
+            new MobjStateDef(969, Sprite.TROO, 0, 3, null, ma.ZombieChase, MobjState.TrooRun2, 0, 0), // State.ZombieRun1
+            new MobjStateDef(970, Sprite.TROO, 0, 3, null, ma.ZombieChase, MobjState.TrooRun3, 0, 0), // State.ZombieRun2
+            new MobjStateDef(970, Sprite.TROO, 1, 3, null, ma.ZombieChase, MobjState.TrooRun4, 0, 0), // State.ZombieRun3
+            new MobjStateDef(971, Sprite.TROO, 1, 3, null, ma.ZombieChase, MobjState.TrooRun5, 0, 0), // State.ZombieRun4
+            new MobjStateDef(972, Sprite.TROO, 2, 3, null, ma.ZombieChase, MobjState.TrooRun6, 0, 0), // State.ZombieRun5
+            new MobjStateDef(973, Sprite.TROO, 2, 3, null, ma.ZombieChase, MobjState.TrooRun7, 0, 0), // State.ZombieRun6
+            new MobjStateDef(974, Sprite.TROO, 3, 3, null, ma.ZombieChase, MobjState.TrooRun8, 0, 0), // State.ZombieRun7
+            new MobjStateDef(975, Sprite.TROO, 3, 3, null, ma.ZombieChase, MobjState.TrooRun1, 0, 0), // State.ZombieRun8
+            new MobjStateDef(976, Sprite.TROO, 4, 8, null, ma.FaceTarget, MobjState.TrooAtk2, 0, 0), // State.ZombieAtk1
+            new MobjStateDef(977, Sprite.TROO, 5, 8, null, ma.FaceTarget, MobjState.TrooAtk3, 0, 0), // State.ZombieAtk2
+            new MobjStateDef(978, Sprite.TROO, 6, 6, null, ma.ZombieAttack, MobjState.TrooRun1, 0, 0), // State.ZombieAtk3
         };
     }
 }

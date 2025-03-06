@@ -99,6 +99,40 @@ namespace ManagedDoom
             }
         }
 
+        private bool LookForNearestPlayer(Mobj actor)
+        {
+            var players = world.Options.Players;
+
+            var count = 0;
+            var stop = (actor.LastLook - 1) & 3;
+
+            for (; ; actor.LastLook = (actor.LastLook + 1) & 3)
+            {
+                if (!players[actor.LastLook].InGame)
+                {
+                    continue;
+                }
+
+                if (count++ == 2 || actor.LastLook == stop)
+                {
+                    // Done looking.
+                    return false;
+                }
+
+                var player = players[actor.LastLook];
+
+                if (player.Health <= 0)
+                {
+                    // Player is dead.
+                    continue;
+                }
+
+                actor.Target = player.Mobj;
+
+                return true;
+            }
+        }
+
 
         public void Look(Mobj actor)
         {
@@ -2009,6 +2043,155 @@ namespace ManagedDoom
 
             // Remove self (i.e., cube).
             world.ThingAllocation.RemoveMobj(actor);
+        }
+
+        public void ZombieLook(Mobj actor)
+        {
+            // Any shot will wake up.
+            actor.Threshold = 0;
+
+            var target = actor.Subsector.Sector.SoundTarget;
+
+            if (target != null && (target.Flags & MobjFlags.Shootable) != 0)
+            {
+                actor.Target = target;
+
+                goto seeYou;
+            }
+
+            if (!LookForNearestPlayer(actor))
+            {
+                return;
+            }
+
+        // Go into chase state.
+        seeYou:
+            if (actor.Info.SeeSound != 0)
+            {
+                int sound;
+
+                switch (actor.Info.SeeSound)
+                {
+                    case Sfx.POSIT1:
+                    case Sfx.POSIT2:
+                    case Sfx.POSIT3:
+                        sound = (int)Sfx.POSIT1 + world.Random.Next() % 3;
+                        break;
+
+                    case Sfx.BGSIT1:
+                    case Sfx.BGSIT2:
+                        sound = (int)Sfx.BGSIT1 + world.Random.Next() % 2;
+                        break;
+
+                    default:
+                        sound = (int)actor.Info.SeeSound;
+                        break;
+                }
+
+                world.StartSound(actor, (Sfx)sound, SfxType.Voice);
+            }
+
+            actor.SetState(actor.Info.SeeState);
+        }
+
+        public void ZombieChase(Mobj actor)
+        {
+            if (actor.ReactionTime > 0)
+            {
+                actor.ReactionTime--;
+            }
+
+            // Modify target threshold.
+            if (actor.Threshold > 0)
+            {
+                if (actor.Target == null || actor.Target.Health <= 0)
+                {
+                    actor.Threshold = 0;
+                }
+                else
+                {
+                    actor.Threshold--;
+                }
+            }
+
+            // Turn towards movement direction if not there yet.
+            if ((int)actor.MoveDir < 8)
+            {
+                actor.Angle = new Angle((int)actor.Angle.Data & (7 << 29));
+
+                var delta = (int)(actor.Angle - new Angle((int)actor.MoveDir << 29)).Data;
+
+                if (delta > 0)
+                {
+                    actor.Angle -= new Angle(Angle.Ang90.Data / 2);
+                }
+                else if (delta < 0)
+                {
+                    actor.Angle += new Angle(Angle.Ang90.Data / 2);
+                }
+            }
+
+            if (actor.Target == null || (actor.Target.Flags & MobjFlags.Shootable) == 0)
+            {
+                // Look for a new target.
+                if (LookForNearestPlayer(actor))
+                {
+                    // Got a new target.
+                    return;
+                }
+
+                actor.SetState(actor.Info.SpawnState);
+
+                return;
+            }
+
+            // Do not attack twice in a row.
+            if ((actor.Flags & MobjFlags.JustAttacked) != 0)
+            {
+                actor.Flags &= ~MobjFlags.JustAttacked;
+
+                if (world.Options.Skill != GameSkill.Nightmare &&
+                    !world.Options.FastMonsters)
+                {
+                    NewChaseDir(actor);
+                }
+
+                return;
+            }
+
+            // Check for melee attack.
+            if (actor.Info.MeleeState != 0 && CheckMeleeRange(actor))
+            {
+                if (actor.Info.AttackSound != 0)
+                {
+                    world.StartSound(actor, actor.Info.AttackSound, SfxType.Weapon);
+                }
+
+                actor.SetState(actor.Info.MeleeState);
+
+                return;
+            }
+
+        }
+
+        public void ZombieAttack(Mobj actor)
+        {
+            if (actor.Target == null)
+            {
+                return;
+            }
+
+            FaceTarget(actor);
+
+            if (CheckMeleeRange(actor))
+            {
+                world.StartSound(actor, Sfx.CLAW, SfxType.Weapon);
+
+                var damage = (world.Random.Next() % 8 + 1) * 3;
+                world.ThingInteraction.DamageMobj(actor.Target, actor, actor, damage);
+
+                return;
+            }
         }
     }
 }

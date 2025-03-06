@@ -157,6 +157,8 @@ namespace ManagedDoom
         Misc83,
         Misc84,
         Misc85,
-        Misc86
+        Misc86,
+        Zombie,
+        Dog,
     }
 }

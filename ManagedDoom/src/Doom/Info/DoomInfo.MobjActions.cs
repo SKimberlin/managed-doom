@@ -282,6 +282,21 @@ namespace ManagedDoom
             {
                 world.MonsterBehavior.BrainExplode(actor);
             }
+
+            public void ZombieLook(World world, Mobj actor)
+            {
+                world.MonsterBehavior.ZombieLook(actor);
+            }
+
+            public void ZombieChase(World world, Mobj actor)
+            { 
+                world.MonsterBehavior.ZombieChase(actor);
+            }
+
+            public void ZombieAttack(World world, Mobj actor)
+            {
+                world.MonsterBehavior.ZombieAttack(actor);
+            }
         }
     }
 }
