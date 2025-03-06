@@ -252,7 +252,7 @@ namespace ManagedDoom
             demo.Options.Sound = options.Sound;
             demo.Options.Music = options.Music;
 
-            game = new DoomGame(content, demo.Options);
+            game = new DoomGame(content, demo.Options, new DoomMenu());
             game.DeferedInitNew();
         }
 

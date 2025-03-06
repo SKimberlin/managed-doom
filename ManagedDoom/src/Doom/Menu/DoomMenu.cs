@@ -38,6 +38,8 @@ namespace ManagedDoom
         private YesNoConfirm endGameConfirm;
         private QuitConfirm quitConfirm;
 
+        private YesNoConfirm testshop;
+
         private MenuDef current;
 
         private bool active;
@@ -48,9 +50,19 @@ namespace ManagedDoom
 
         private SaveSlots saveSlots;
 
+        public DoomMenu()
+        {
+
+        }
+
         public DoomMenu(Doom doom)
         {
             this.doom = doom;
+
+            testshop = new YesNoConfirm(
+                this,
+                "Buy Something WILL YOU!!!\n-20 Credits\n" + DoomInfo.Strings.PRESSYN,
+                () => doom.Options.Players[0].RemoveCurrency(20));
 
             thisIsShareware = new PressAnyKey(
                 this,
@@ -472,6 +484,13 @@ namespace ManagedDoom
             SetCurrent(endGameConfirm);
             Open();
             StartSound(Sfx.SWTCHN);
+        }
+
+        public void Shop()
+        {
+            SetCurrent(testshop);
+            Open();
+            StartSound(Sfx.TINK);
         }
 
         public void Quit()

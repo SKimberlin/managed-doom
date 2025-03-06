@@ -294,6 +294,11 @@ namespace ManagedDoom
             oldAngle = Angle.Ang0;
         }
 
+        public void RemoveCurrency(int amount)
+        {
+            currency -= amount;
+        }
+
         public void FinishLevel()
         {
             Array.Clear(powers, 0, powers.Length);

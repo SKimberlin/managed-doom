@@ -30,6 +30,7 @@ namespace ManagedDoom
 
 		private int gameTic;
 
+		private DoomMenu menu;
 		private World world;
 		private Intermission intermission;
 		private Finale finale;
@@ -40,10 +41,11 @@ namespace ManagedDoom
 		private int saveGameSlotNumber;
 		private string saveGameDescription;
 
-		public DoomGame(GameContent content, GameOptions options)
+		public DoomGame(GameContent content, GameOptions options, DoomMenu menu)
 		{
 			this.content = content;
 			this.options = options;
+			this.menu = menu;
 
 			gameAction = GameAction.Nothing;
 
@@ -297,7 +299,7 @@ namespace ManagedDoom
 
 			options.Sound.Reset();
 
-			world = new World(content, options, this);
+			world = new World(content, options, this, menu);
 
 			options.UserInput.Reset();
 		}

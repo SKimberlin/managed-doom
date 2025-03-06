@@ -25,9 +25,12 @@ namespace ManagedDoom
 
 		private World world;
 
-		public MapInteraction(World world)
+		private DoomMenu menu;
+
+		public MapInteraction(World world, DoomMenu menu)
 		{
 			this.world = world;
+			this.menu = menu;
 
 			InitUse();
 		}
@@ -180,8 +183,10 @@ namespace ManagedDoom
 
 				case 11:
 					// Exit level.
-					specials.ChangeSwitchTexture(line, false);
-					world.ExitLevel();
+					// I am making this a shop right now
+					specials.ChangeSwitchTexture(line, true);
+					//world.ExitLevel();
+					menu.Shop();
 					break;
 
 				case 14:
