@@ -3641,30 +3641,32 @@ namespace ManagedDoom
                 MobjState.SposRaise1 // raiseState
             ),
 
-            new MobjInfo( // MobjType.Troop
-                3001, // doomEdNum
-                MobjState.TrooStnd, // spawnState
-                60, // spawnHealth
-                MobjState.TrooRun1, // seeState
-                Sfx.BGSIT1, // seeSound
+            // Custom Powerup - Max Ammo
+
+            new MobjInfo( // MobjType.MaxAmmo
+                16002, // doomEdNum
+                MobjState.MaxAmmo, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
                 8, // reactionTime
                 Sfx.NONE, // attackSound
-                MobjState.TrooPain, // painState
-                200, // painChance
-                Sfx.POPAIN, // painSound
-                MobjState.TrooAtk1, // meleeState
-                MobjState.TrooAtk1, // missileState
-                MobjState.TrooDie1, // deathState
-                MobjState.TrooXdie1, // xdeathState
-                Sfx.BGDTH1, // deathSound
-                8, // speed
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
                 Fixed.FromInt(20), // radius
-                Fixed.FromInt(56), // height
+                Fixed.FromInt(16), // height
                 100, // mass
                 0, // damage
-                Sfx.BGACT, // activeSound
-                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
-                MobjState.TrooRaise1 // raiseState
+                Sfx.NONE, // activeSound
+                MobjFlags.Special, // flags
+                MobjState.Null // raiseState
             ),
 
         };

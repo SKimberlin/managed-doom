@@ -1006,6 +1006,7 @@ namespace ManagedDoom
             new MobjStateDef(976, Sprite.TROO, 4, 8, null, ma.FaceTarget, MobjState.ZombieAtk2, 0, 0), // State.ZombieAtk1
             new MobjStateDef(977, Sprite.TROO, 5, 8, null, ma.FaceTarget, MobjState.ZombieAtk3, 0, 0), // State.ZombieAtk2
             new MobjStateDef(978, Sprite.TROO, 6, 6, null, ma.ZombieAttack, MobjState.ZombieRun1, 0, 0), // State.ZombieAtk3
+            new MobjStateDef(979, Sprite.MXAM, 0, -1, null, null, MobjState.Null, 0, 0), // State.MaxAmmo
         };
     }
 }

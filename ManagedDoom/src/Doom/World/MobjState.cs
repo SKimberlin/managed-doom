@@ -1001,5 +1001,6 @@ namespace ManagedDoom
         ZombieAtk1,
         ZombieAtk2,
         ZombieAtk3,
+        MaxAmmo,
     }
 }

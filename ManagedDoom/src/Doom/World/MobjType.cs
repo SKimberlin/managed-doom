@@ -160,5 +160,6 @@ namespace ManagedDoom
         Misc86,
         Zombie,
         Dog,
+        MaxAmmo,
     }
 }
