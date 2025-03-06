@@ -23,7 +23,12 @@ namespace ManagedDoom {
         private int waveStartTime;
         private int waveDelay = GameConst.TicRate * 5;
 
-        private MobjType currentMonsterType = MobjType.Possessed;
+        private MobjType[] monsterTypes = {
+
+            MobjType.Zombie,
+            MobjType.Dog
+
+        };
 
         private World world;
         private List<MapThing> spawnPoints;
@@ -94,8 +99,13 @@ namespace ManagedDoom {
 
         public void SpawnMonster() {
 
-            MobjType type = currentMonsterType;
+            MobjType type = monsterTypes[0];
             if ( wave % specialMonstersWaveInterval == 0 ) type = MobjType.Troop;
+            else if (wave > 10) {
+
+                type = (new Random().Next(10) < 9) ? monsterTypes[0] : monsterTypes[1];
+
+            }
 
             MapThing spawnPoint = spawnPoints[ new Random().Next( spawnPoints.Count ) ];
 
