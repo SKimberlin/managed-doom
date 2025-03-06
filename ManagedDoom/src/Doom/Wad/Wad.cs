@@ -204,6 +204,8 @@ namespace ManagedDoom
                         return GameMode.Retail;
                     case "doom1":
                         return GameMode.Shareware;
+                    case "doomtestmap":
+                        return GameMode.Zombies;
                 }
             }
 

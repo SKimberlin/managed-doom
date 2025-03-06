@@ -502,10 +502,16 @@ namespace ManagedDoom
             set => refire = value;
         }
 
+        public event Action<Player> OnMobKilled;
         public int KillCount
         {
             get => killCount;
-            set => killCount = value;
+            set {
+
+                killCount = value;
+                OnMobKilled?.Invoke( this );
+
+            }
         }
 
         public int ItemCount

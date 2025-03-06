@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace ManagedDoom {
 
@@ -7,9 +8,8 @@ namespace ManagedDoom {
 
         private int wave = 0;
 
-        private int monstersKilledTotal = 0;
-        private int monstersKilledNeeeded = 0;
         private int monsterSpawnCount = 0;
+        private int monstersSpawned = 0;
 
         private int currentMonstersPerWave = 2;
         private int monstersPerWaveIncrease = 3;
@@ -35,7 +35,7 @@ namespace ManagedDoom {
             spawnPoints = new List<MapThing>();
             foreach ( var thing in world.Map.Things ) {
 
-                if ( thing.Type != 3004 && thing.Type != 9 ) continue; //Replace with ID for Spawnpoint
+                if ( thing.Type != 3004 && thing.Type != 9 && thing.Type != 64 && thing.Type != 66 ) continue;
 
                 spawnPoints.Add( thing );
 
@@ -51,6 +51,12 @@ namespace ManagedDoom {
 
             }
 
+            world.Options.Players[0].OnMobKilled += ( mobj ) => {
+
+                monstersSpawned--;
+
+            };
+
         }
 
         public void Update() {
@@ -58,11 +64,11 @@ namespace ManagedDoom {
             if ( !Started ) return;
 
 
-            monstersKilledTotal = world.Options.Players[0].KillCount;
-            if ( monstersKilledNeeeded <= monstersKilledTotal ) {
+            if ( monstersSpawned == 0 && monsterSpawnCount == 0 ) {
 
                 waveStartTime = world.LevelTime;
                 StartWave();
+
 
             }
 
@@ -82,7 +88,6 @@ namespace ManagedDoom {
             currentMonstersPerWave += monstersPerWaveIncrease;
 
             monsterSpawnCount = currentMonstersPerWave;
-            monstersKilledNeeeded = monstersKilledTotal + currentMonstersPerWave;
             currentMonsterHealthMultiplyer += monsterHealthMultiplyerIncrease;
 
         }
@@ -99,6 +104,7 @@ namespace ManagedDoom {
             var mobj = world.ThingAllocation.SpawnMobj( spawnPoint.X, spawnPoint.Y, Mobj.OnFloorZ, type );
             mobj.SpawnPoint = spawnPoint;
             mobj.Health = (int) (float) currentMonsterHealthMultiplyer * mobj.Health;
+            monstersSpawned++;
             monsterSpawnCount--;
 
         }

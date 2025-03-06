@@ -140,9 +140,9 @@ namespace ManagedDoom
             }
 
             // Don't spawn any monsters if -nomonsters.
-            if ( world.Options.NoMonsters &&
+            if ( world.Options.GameMode == GameMode.Zombies || (world.Options.NoMonsters && 
                     ( i == (int)MobjType.Skull ||
-                    (DoomInfo.MobjInfos[i].Flags & MobjFlags.CountKill) != 0))
+                    (DoomInfo.MobjInfos[i].Flags & MobjFlags.CountKill) != 0)) )
             {
                 return;
             }

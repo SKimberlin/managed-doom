@@ -92,7 +92,6 @@ namespace ManagedDoom
             statusBar = new StatusBar(this);
             autoMap = new AutoMap(this);
             cheat = new Cheat(this);
-            waveController = new WaveController( this );
 
             options.IntermissionInfo.TotalFrags = 0;
             options.IntermissionInfo.ParTime = 180;
@@ -141,7 +140,8 @@ namespace ManagedDoom
 
             options.Music.StartMusic(Map.GetMapBgm(options), true);
 
-            waveController.Start();
+            if ( waveController != null ) waveController.Start();
+
         }
 
         public UpdateResult Update()
@@ -176,7 +176,7 @@ namespace ManagedDoom
 
             statusBar.Update();
             autoMap.Update();
-            waveController.Update();
+            if (waveController != null) waveController.Update();
 
             levelTime++;
 
@@ -233,6 +233,8 @@ namespace ManagedDoom
 
                 thingAllocation.SpawnMapThing(mt);
             }
+
+            if (options.GameMode == GameMode.Zombies ) waveController = new WaveController( this );
         }
 
         public void ExitLevel()
