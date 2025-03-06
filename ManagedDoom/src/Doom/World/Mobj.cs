@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace ManagedDoom
 {
@@ -169,6 +170,8 @@ namespace ManagedDoom
         private Fixed oldX;
         private Fixed oldY;
         private Fixed oldZ;
+
+        private List<Vertex> vertexes;
 
         public Mobj(World world)
         {
@@ -623,6 +626,12 @@ namespace ManagedDoom
         {
             get => tracer;
             set => tracer = value;
+        }
+
+        public List<Vertex> Vertexes
+        {
+            get => vertexes;
+            set => vertexes = value;
         }
     }
 }

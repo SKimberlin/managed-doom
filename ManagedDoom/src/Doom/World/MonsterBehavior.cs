@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace ManagedDoom
 {
@@ -163,8 +164,8 @@ namespace ManagedDoom
                 return;
             }
 
-            // Go into chase state.
-            seeYou:
+        // Go into chase state.
+        seeYou:
             if (actor.Info.SeeSound != 0)
             {
                 int sound;
@@ -694,7 +695,7 @@ namespace ManagedDoom
                 return;
             }
 
-            noMissile:
+        noMissile:
             // Possibly choose another target.
             if (world.Options.NetGame &&
                 actor.Threshold == 0 &&
@@ -2145,6 +2146,17 @@ namespace ManagedDoom
                 return;
             }
 
+            if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
+            {
+                if (actor.Vertexes == null) AStar(actor);
+
+                if (actor.Vertexes != null && actor.Vertexes.Count > 0) FollowPath(actor);               
+
+                return;
+            }
+
+            actor.Vertexes = null;
+
             // Do not attack twice in a row.
             if ((actor.Flags & MobjFlags.JustAttacked) != 0)
             {
@@ -2192,6 +2204,139 @@ namespace ManagedDoom
 
                 return;
             }
+        }
+
+        public void FollowPath(Mobj actor)
+        {
+            var oldDir = actor.MoveDir;
+            var turnAround = opposite[(int)oldDir];
+
+            var deltaX = actor.Vertexes[0].X - actor.X;
+            var deltaY = actor.Vertexes[0].Y - actor.Y;
+            actor.Vertexes.RemoveAt(0);
+
+            if (deltaX > Fixed.FromInt(10))
+            {
+                choices[1] = Direction.East;
+            }
+            else if (deltaX < Fixed.FromInt(-10))
+            {
+                choices[1] = Direction.west;
+            }
+            else
+            {
+                choices[1] = Direction.None;
+            }
+
+            if (deltaY < Fixed.FromInt(-10))
+            {
+                choices[2] = Direction.South;
+            }
+            else if (deltaY > Fixed.FromInt(10))
+            {
+                choices[2] = Direction.North;
+            }
+            else
+            {
+                choices[2] = Direction.None;
+            }
+
+            if (choices[1] != Direction.None && choices[2] != Direction.None)
+            {
+                var a = (deltaY < Fixed.Zero) ? 1 : 0;
+                var b = (deltaX > Fixed.Zero) ? 1 : 0;
+                actor.MoveDir = diags[(a << 1) + b];
+
+                if (actor.MoveDir != turnAround && TryWalk(actor))
+                {
+                    return;
+                }
+                else
+                {
+                    actor.MoveDir = Direction.None;
+                }
+            }
+        }
+
+        unsafe public void AStar(Mobj actor)
+        {
+            if (actor.Target == null) return;
+            Vertex start = new Vertex(actor.X, actor.Y);
+            Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
+
+            Fixed distanceSqr = (start.X - end.X) * (start.X - end.X) + (start.Y - end.Y) * (start.Y - end.Y);
+
+            List<MapNode> searchedNodes = new List<MapNode>();
+            PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>();
+            MapNode current = new MapNode(start, null, distanceSqr, Fixed.Zero);
+
+            priorityQueue.Enqueue(current, current.H);
+            while (priorityQueue.Count > 0)
+            {
+                current = priorityQueue.Dequeue();
+                if (current.DistanceToEnd < Fixed.One * 10)
+                {
+                    ReconstructPath(actor, &current);
+                    return;
+                }
+                searchedNodes.Add(current);
+
+                foreach (Vertex vertex in GetNeighbors(current.Position))
+                {
+                    if (world.ThingMovement.CheckPosition(actor, current.Position.X, current.Position.Y)) continue;
+                    Fixed distanceToEnd = (vertex.X - end.X) * (vertex.X - end.X) + (vertex.Y - end.Y) * (vertex.Y - end.Y);
+                    Fixed distanceToStart = (vertex.X - start.X) * (vertex.X - start.X) + (vertex.Y - start.Y) * (vertex.Y - start.Y);
+
+                    MapNode neighbor = new MapNode(vertex, &current, distanceToEnd, distanceToStart);
+                    if (!searchedNodes.Contains(neighbor))
+                    {
+                        priorityQueue.Enqueue(neighbor, neighbor.H);
+                    }
+                }
+            }
+        }
+
+        unsafe public void ReconstructPath(Mobj actor, MapNode* node)
+        {
+            Stack<Vertex> path = new Stack<Vertex>();
+            while (node->Last != null)
+            {
+                path.Push(node->Position);
+                node = node->Last;
+            }
+            actor.Vertexes = new List<Vertex>(path);
+        }
+
+        public List<Vertex> GetNeighbors(Vertex vertex)
+        {
+            return new List<Vertex> {
+                    new Vertex(vertex.X - Fixed.One, vertex.Y - Fixed.One),
+                    new Vertex(vertex.X, vertex.Y - Fixed.One),
+                    new Vertex(vertex.X + Fixed.One, vertex.Y - Fixed.One),
+                    new Vertex(vertex.X + Fixed.One, vertex.Y),
+                    new Vertex(vertex.X + Fixed.One, vertex.Y + Fixed.One),
+                    new Vertex(vertex.X, vertex.Y + Fixed.One),
+                    new Vertex(vertex.X - Fixed.One, vertex.Y + Fixed.One),
+                    new Vertex(vertex.X - Fixed.One, vertex.Y),
+            };
+        }
+    }
+
+    unsafe public class MapNode
+    {
+        public Vertex Position { get; }
+        public MapNode* Last { get; }
+        public Fixed DistanceToEnd { get; }
+        public Fixed DistanceToStart { get; }
+        public Fixed H { get; }
+
+        public MapNode(Vertex position, MapNode* last, Fixed distanceToEnd, Fixed distanceToStart)
+        {
+            this.Position = position;
+            this.Last = last;
+            DistanceToEnd = distanceToEnd;
+            DistanceToStart = distanceToStart;
+            H = distanceToEnd + distanceToStart;
         }
     }
 }
