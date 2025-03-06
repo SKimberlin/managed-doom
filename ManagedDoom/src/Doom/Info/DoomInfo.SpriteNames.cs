@@ -160,7 +160,8 @@ namespace ManagedDoom
             new DoomString("POB2"),
             new DoomString("BRS1"),
             new DoomString("TLMP"),
-            new DoomString("TLP2")
+            new DoomString("TLP2"),
+            new DoomString("MXAM")
         };
     }
 }

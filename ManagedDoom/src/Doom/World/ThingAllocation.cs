@@ -139,10 +139,12 @@ namespace ManagedDoom
                 return;
             }
 
+            if ( world.Options.GameMode == GameMode.Zombies && ( i == (int) MobjType.Skull || ( DoomInfo.MobjInfos[i].Flags & MobjFlags.CountKill ) != 0 ) ) return;
+
             // Don't spawn any monsters if -nomonsters.
-            if (world.Options.NoMonsters &&
-                    (i == (int)MobjType.Skull ||
-                    (DoomInfo.MobjInfos[i].Flags & MobjFlags.CountKill) != 0))
+            if (world.Options.NoMonsters && 
+                    ( i == (int)MobjType.Skull ||
+                    (DoomInfo.MobjInfos[i].Flags & MobjFlags.CountKill) != 0) )
             {
                 return;
             }

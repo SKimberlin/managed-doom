@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Reflection.Emit;
 
 namespace ManagedDoom
 {
@@ -738,6 +739,16 @@ namespace ManagedDoom
                     player.SendMessage(DoomInfo.Strings.GOTSHOTGUN2);
                     sound = Sfx.WPNUP;
                     break;
+
+                case Sprite.MXAM:
+                for ( var i = 0; i < player.WeaponOwned.Length; i++ ) {
+                    
+                    if ( !player.WeaponOwned[i] ) continue;
+                    if ( DoomInfo.WeaponInfos[i].Ammo == AmmoType.NoAmmo ) continue;
+                    player.Ammo[ (int) DoomInfo.WeaponInfos[i].Ammo] = player.MaxAmmo[ (int) DoomInfo.WeaponInfos[i].Ammo];
+
+                }
+                break;
 
                 default:
                     throw new Exception("Unknown gettable thing!");

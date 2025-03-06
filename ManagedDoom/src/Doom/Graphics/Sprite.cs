@@ -159,6 +159,7 @@ namespace ManagedDoom
         BRS1,
         TLMP,
         TLP2,
-        Count
+        MXAM,
+        Count,
     }
 }

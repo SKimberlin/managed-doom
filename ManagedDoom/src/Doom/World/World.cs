@@ -46,6 +46,7 @@ namespace ManagedDoom
         private StatusBar statusBar;
         private AutoMap autoMap;
         private Cheat cheat;
+        private WaveController waveController;
 
         private int totalKills;
         private int totalItems;
@@ -138,6 +139,9 @@ namespace ManagedDoom
             dummy = new Mobj(this);
 
             options.Music.StartMusic(Map.GetMapBgm(options), true);
+
+            if ( waveController != null ) waveController.Start();
+
         }
 
         public UpdateResult Update()
@@ -172,6 +176,7 @@ namespace ManagedDoom
 
             statusBar.Update();
             autoMap.Update();
+            if (waveController != null) waveController.Update();
 
             levelTime++;
 
@@ -228,6 +233,8 @@ namespace ManagedDoom
 
                 thingAllocation.SpawnMapThing(mt);
             }
+
+            if (options.GameMode == GameMode.Zombies ) waveController = new WaveController( this );
         }
 
         public void ExitLevel()
@@ -393,5 +400,6 @@ namespace ManagedDoom
         public Player ConsolePlayer => options.Players[options.ConsolePlayer];
         public Player DisplayPlayer => options.Players[displayPlayer];
         public bool FirstTicIsNotYetDone => ConsolePlayer.ViewZ == Fixed.Epsilon;
+
     }
 }

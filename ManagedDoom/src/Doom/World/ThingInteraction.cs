@@ -51,6 +51,7 @@ namespace ManagedDoom
 				// Count for intermission.
 				if ((target.Flags & MobjFlags.CountKill) != 0)
 				{
+					source.Player.Currency += 10;
 					source.Player.KillCount++;
 				}
 
@@ -119,7 +120,26 @@ namespace ManagedDoom
 					item = MobjType.Chaingun;
 					break;
 
-				default:
+				case MobjType.Zombie:
+
+					int r = new Random().Next(3);
+					switch ( r ) {
+
+						case < 2:
+						item = MobjType.MaxAmmo;
+						break;
+
+						case 2: 
+						item = MobjType.Misc11;
+						break;
+
+                    default:
+						return;
+
+                }
+					break;
+
+                default:
 					return;
 			}
 

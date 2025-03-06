@@ -610,5 +610,13 @@ test-results
 
 
 #Misc Files
-*.wad
+DOOM2.wad
+PLUTONIA.wad
+TNT.wad
+DOOM.wad
+DOOM1.wad
+FREEDOOM2.wad
+FREEDOOM1.wad
+*.dbs
 managed-doom.cfg
+ignore/
