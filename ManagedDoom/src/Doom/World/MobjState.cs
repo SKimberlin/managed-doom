@@ -987,6 +987,19 @@ namespace ManagedDoom
         Tech2Lamp,
         Tech2Lamp2,
         Tech2Lamp3,
-        Tech2Lamp4
+        Tech2Lamp4,
+        ZombieStnd,
+        ZombieStnd2,
+        ZombieRun1,
+        ZombieRun2,
+        ZombieRun3,
+        ZombieRun4,
+        ZombieRun5,
+        ZombieRun6,
+        ZombieRun7,
+        ZombieRun8,
+        ZombieAtk1,
+        ZombieAtk2,
+        ZombieAtk3,
     }
 }

@@ -3583,7 +3583,89 @@ namespace ManagedDoom
                 Sfx.NONE, // activeSound
                 MobjFlags.NoBlockMap, // flags
                 MobjState.Null // raiseState
-            )
+            ),
+
+            // Custom Zombie Enemy
+
+            new MobjInfo( // MobjType.Zombie
+                16000, // doomEdNum
+                MobjState.ZombieStnd, // spawnState
+                20, // spawnHealth
+                MobjState.ZombieRun1, // seeState
+                Sfx.BGSIT1, // seeSound
+                4, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.TrooPain, // painState
+                170, // painChance
+                Sfx.NONE, // painSound
+                MobjState.ZombieAtk1, // meleeState
+                MobjState.Null, // missileState
+                MobjState.TrooDie1, // deathState
+                MobjState.TrooXdie1, // xdeathState
+                Sfx.BGDTH1, // deathSound
+                8, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(56), // height
+                100, // mass
+                0, // damage
+                Sfx.POSACT, // activeSound
+                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
+                MobjState.SposRaise1 // raiseState
+            ),
+
+            // Custom Dog Enemy
+
+            new MobjInfo( // MobjType.Dog
+                16001, // doomEdNum
+                MobjState.SposStnd, // spawnState
+                30, // spawnHealth
+                MobjState.SposRun1, // seeState
+                Sfx.POSIT2, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                170, // painChance
+                Sfx.POPAIN, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.PODTH2, // deathSound
+                8, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(56), // height
+                100, // mass
+                0, // damage
+                Sfx.POSACT, // activeSound
+                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
+                MobjState.SposRaise1 // raiseState
+            ),
+
+            new MobjInfo( // MobjType.Troop
+                3001, // doomEdNum
+                MobjState.TrooStnd, // spawnState
+                60, // spawnHealth
+                MobjState.TrooRun1, // seeState
+                Sfx.BGSIT1, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.TrooPain, // painState
+                200, // painChance
+                Sfx.POPAIN, // painSound
+                MobjState.TrooAtk1, // meleeState
+                MobjState.TrooAtk1, // missileState
+                MobjState.TrooDie1, // deathState
+                MobjState.TrooXdie1, // xdeathState
+                Sfx.BGDTH1, // deathSound
+                8, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(56), // height
+                100, // mass
+                0, // damage
+                Sfx.BGACT, // activeSound
+                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
+                MobjState.TrooRaise1 // raiseState
+            ),
 
         };
     }
