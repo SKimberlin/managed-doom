@@ -187,6 +187,18 @@ namespace ManagedDoom
         public override void Run()
         {
 
+            if ( ( flags & MobjFlags.Decay ) != 0 ) {
+
+                health--;
+                if ( health <= 0 ) {
+
+                    world.ThingAllocation.RemoveMobj( this );
+                    return;
+
+                }
+
+            }
+
             if ( regen && player != null) {
 
                 if ( health < 100 ) {
