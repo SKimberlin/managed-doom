@@ -3603,7 +3603,7 @@ namespace ManagedDoom
                 MobjState.TrooDie1, // deathState
                 MobjState.TrooXdie1, // xdeathState
                 Sfx.BGDTH1, // deathSound
-                8, // speed
+                16, // speed
                 Fixed.FromInt(20), // radius
                 Fixed.FromInt(56), // height
                 100, // mass

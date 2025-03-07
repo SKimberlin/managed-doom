@@ -85,6 +85,11 @@ namespace ManagedDoom
                 return a;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Fixed Sqrt(Fixed a)
+        {
+            return FromDouble(Math.Sqrt(a.ToDouble()));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Fixed operator +(Fixed a)
@@ -255,6 +260,7 @@ namespace ManagedDoom
         {
             return (data + FracUnit - 1) >> FracBits;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
         public override bool Equals(object obj)
         {

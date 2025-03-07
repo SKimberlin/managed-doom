@@ -16,7 +16,9 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ManagedDoom
 {
@@ -2148,9 +2150,8 @@ namespace ManagedDoom
 
             if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
             {
-                if (actor.Vertexes == null) AStar(actor);
-
-                if (actor.Vertexes != null && actor.Vertexes.Count > 0) FollowPath(actor);               
+                if (actor.Vertexes == null || actor.Vertexes.Count == 0) AStar(actor);
+                else FollowPath(actor);   
 
                 return;
             }
@@ -2219,13 +2220,33 @@ namespace ManagedDoom
 
         public void FollowPath(Mobj actor)
         {
+            if (actor.Vertexes.Count == 0)
+            {
+                actor.MoveDir = Direction.None;
+                return;
+            }
+
             var oldDir = actor.MoveDir;
             var turnAround = opposite[(int)oldDir];
 
-            var deltaX = actor.Vertexes[0].X - actor.X;
-            var deltaY = actor.Vertexes[0].Y - actor.Y;
-            actor.Vertexes.RemoveAt(0);
+            //var deltaX = actor.Vertexes[0].X - actor.X;
+            //var deltaY = actor.Vertexes[0].Y - actor.Y;
 
+            var deltaX = actor.X - actor.Vertexes[0].X;
+            var deltaY = actor.Y - actor.Vertexes[0].Y;
+
+            // Remove vertex if close enough
+            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))))
+            {
+                actor.Vertexes.RemoveAt(0);
+                if (actor.Vertexes.Count == 0)
+                {
+                    actor.MoveDir = Direction.None;
+                    return;
+                }
+            }
+
+            // Set movement choices
             if (deltaX > Fixed.FromInt(10))
             {
                 choices[1] = Direction.East;
@@ -2252,6 +2273,7 @@ namespace ManagedDoom
                 choices[2] = Direction.None;
             }
 
+            // Try diagonal movement first
             if (choices[1] != Direction.None && choices[2] != Direction.None)
             {
                 var a = (deltaY < Fixed.Zero) ? 1 : 0;
@@ -2262,11 +2284,66 @@ namespace ManagedDoom
                 {
                     return;
                 }
-                else
+            }
+
+            // Randomize movement priority
+            if (world.Random.Next() > 200 || Fixed.Abs(deltaY) > Fixed.Abs(deltaX))
+            {
+                var temp = choices[1];
+                choices[1] = choices[2];
+                choices[2] = temp;
+            }
+
+            // Prevent moving backwards
+            if (choices[1] == turnAround) choices[1] = Direction.None;
+            if (choices[2] == turnAround) choices[2] = Direction.None;
+
+            // Try individual axis movement
+            if (choices[1] != Direction.None)
+            {
+                actor.MoveDir = choices[1];
+                if (TryWalk(actor)) return;
+            }
+
+            if (choices[2] != Direction.None)
+            {
+                actor.MoveDir = choices[2];
+                if (TryWalk(actor)) return;
+            }
+
+            // If direct path fails, try the last direction
+            if (oldDir != Direction.None)
+            {
+                actor.MoveDir = oldDir;
+                if (TryWalk(actor)) return;
+            }
+
+            // Last resort: pick a random direction
+            if ((world.Random.Next() & 1) != 0)
+            {
+                for (var dir = (int)Direction.East; dir <= (int)Direction.Southeast; dir++)
                 {
-                    actor.MoveDir = Direction.None;
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
                 }
             }
+            else
+            {
+                for (var dir = (int)Direction.Southeast; dir >= (int)Direction.East; dir--)
+                {
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
+                }
+            }
+
+            // If no movement is possible, stop moving
+            actor.MoveDir = Direction.None;
         }
 
         unsafe public void AStar(Mobj actor)
@@ -2275,79 +2352,106 @@ namespace ManagedDoom
             Vertex start = new Vertex(actor.X, actor.Y);
             Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
 
-            Fixed distanceSqr = (start.X - end.X) * (start.X - end.X) + (start.Y - end.Y) * (start.Y - end.Y);
+            Fixed distanceSqr = Fixed.Sqrt(Fixed.Abs((start.X - end.X) * (start.X - end.X) + (start.Y - end.Y) * (start.Y - end.Y)));
 
             List<MapNode> searchedNodes = new List<MapNode>();
-            PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>();
+            PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>(new FixedDistanceCompare());
             MapNode current = new MapNode(start, null, distanceSqr, Fixed.Zero);
 
-            priorityQueue.Enqueue(current, current.H);
-            while (priorityQueue.Count > 0)
+            priorityQueue.Enqueue(current, current.F);
+            searchedNodes.Add(current);
+            while (priorityQueue.Count > 0 && searchedNodes.Count < 200)
             {
                 current = priorityQueue.Dequeue();
-                if (current.DistanceToEnd < Fixed.One * 10)
+                if (current.H < Fixed.One * 3)
                 {
-                    ReconstructPath(actor, &current);
+                    ReconstructPath(actor, current);
                     return;
                 }
-                searchedNodes.Add(current);
 
                 foreach (Vertex vertex in GetNeighbors(current.Position))
                 {
-                    if (world.ThingMovement.CheckPosition(actor, current.Position.X, current.Position.Y)) continue;
-                    Fixed distanceToEnd = (vertex.X - end.X) * (vertex.X - end.X) + (vertex.Y - end.Y) * (vertex.Y - end.Y);
-                    Fixed distanceToStart = (vertex.X - start.X) * (vertex.X - start.X) + (vertex.Y - start.Y) * (vertex.Y - start.Y);
+                    if (!world.ThingMovement.CheckPosition(actor, current.Position.X, current.Position.Y)) continue;
+                    Fixed distanceToEnd = Fixed.Sqrt(Fixed.Abs((vertex.X - end.X) * (vertex.X - end.X) + (vertex.Y - end.Y) * (vertex.Y - end.Y)));
+                    Fixed distanceToStart = Fixed.Sqrt(Fixed.Abs((vertex.X - start.X) * (vertex.X - start.X) + (vertex.Y - start.Y) * (vertex.Y - start.Y)));
 
-                    MapNode neighbor = new MapNode(vertex, &current, distanceToEnd, distanceToStart);
-                    if (!searchedNodes.Contains(neighbor))
+                    MapNode neighbor = new MapNode(vertex, current, distanceToEnd, distanceToStart);
+
+                    if (!searchedNodes.Any(n => n.Position.X == neighbor.Position.X && n.Position.Y == neighbor.Position.Y))
                     {
-                        priorityQueue.Enqueue(neighbor, neighbor.H);
+                        priorityQueue.Enqueue(neighbor, neighbor.F);
+                        searchedNodes.Add(current);
                     }
                 }
             }
+
+            MapNode returnNode = searchedNodes[0];
+            foreach (MapNode node in searchedNodes)
+            {
+                if (node.H < returnNode.H)
+                {
+                    returnNode = node;
+                }
+            }
+            ReconstructPath(actor, returnNode);
         }
 
-        unsafe public void ReconstructPath(Mobj actor, MapNode* node)
+        unsafe public void ReconstructPath(Mobj actor, MapNode node)
         {
             Stack<Vertex> path = new Stack<Vertex>();
-            while (node->Last != null)
+            while (node != null)
             {
-                path.Push(node->Position);
-                node = node->Last;
+                path.Push(node.Position);
+                node = node.Last;
             }
             actor.Vertexes = new List<Vertex>(path);
+            foreach (Vertex vertex in actor.Vertexes)
+            {
+                Console.Out.WriteLine(vertex.X + " " + vertex.Y);
+            }
         }
 
         public List<Vertex> GetNeighbors(Vertex vertex)
         {
+            Fixed length = Fixed.One * 2;
             return new List<Vertex> {
-                    new Vertex(vertex.X - Fixed.One, vertex.Y - Fixed.One),
-                    new Vertex(vertex.X, vertex.Y - Fixed.One),
-                    new Vertex(vertex.X + Fixed.One, vertex.Y - Fixed.One),
-                    new Vertex(vertex.X + Fixed.One, vertex.Y),
-                    new Vertex(vertex.X + Fixed.One, vertex.Y + Fixed.One),
-                    new Vertex(vertex.X, vertex.Y + Fixed.One),
-                    new Vertex(vertex.X - Fixed.One, vertex.Y + Fixed.One),
-                    new Vertex(vertex.X - Fixed.One, vertex.Y),
+                    new Vertex(vertex.X - length, vertex.Y - length),
+                    new Vertex(vertex.X, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y),
+                    new Vertex(vertex.X + length, vertex.Y + length),
+                    new Vertex(vertex.X, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y),
             };
         }
     }
 
-    unsafe public class MapNode
+    public class MapNode
     {
         public Vertex Position { get; }
-        public MapNode* Last { get; }
-        public Fixed DistanceToEnd { get; }
-        public Fixed DistanceToStart { get; }
-        public Fixed H { get; }
+        public MapNode? Last { get; }
+        public Fixed G { get; } //Distance from start
+        public Fixed H { get; } //Distance to target
+        public Fixed F { get; } //
 
-        public MapNode(Vertex position, MapNode* last, Fixed distanceToEnd, Fixed distanceToStart)
+        public MapNode(Vertex position, MapNode last, Fixed distanceToEnd, Fixed distanceToStart)
         {
             this.Position = position;
             this.Last = last;
-            DistanceToEnd = distanceToEnd;
-            DistanceToStart = distanceToStart;
-            H = distanceToEnd + distanceToStart;
+            G = distanceToStart;
+            H = distanceToEnd;
+            F = distanceToEnd + distanceToStart;
+        }
+    }
+
+    class FixedDistanceCompare : IComparer<Fixed>
+    {
+        public int Compare(Fixed d1, Fixed d2)
+        {
+            if (d1 > d2) return 1;
+            else if (d1 < d2) return -1;
+            return 0;
         }
     }
 }
