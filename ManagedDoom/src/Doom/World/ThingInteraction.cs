@@ -126,6 +126,8 @@ namespace ManagedDoom
 
 				case MobjType.Zombie:
 
+					if ( source == null || source.Player == null ) return;
+
 					int r = new Random().Next(4);
 					switch ( r ) {
 

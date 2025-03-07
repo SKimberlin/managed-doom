@@ -3644,7 +3644,7 @@ namespace ManagedDoom
             // Custom Powerup - Max Ammo
 
             new MobjInfo( // MobjType.MaxAmmo
-                16002, // doomEdNum
+                16020, // doomEdNum
                 MobjState.MaxAmmo, // spawnState
                 1000, // spawnHealth
                 MobjState.Null, // seeState
@@ -3670,7 +3670,7 @@ namespace ManagedDoom
             ),
 
             new MobjInfo( // MobjType.InstaKill
-                16003, // doomEdNum
+                16021, // doomEdNum
                 MobjState.InstaKill, // spawnState
                 1000, // spawnHealth
                 MobjState.Null, // seeState
@@ -3696,7 +3696,7 @@ namespace ManagedDoom
             ),
 
             new MobjInfo( // MobjType.DoublePoints
-                16004, // doomEdNum
+                16022, // doomEdNum
                 MobjState.DoublePoints, // spawnState
                 1000, // spawnHealth
                 MobjState.Null, // seeState
@@ -3722,7 +3722,7 @@ namespace ManagedDoom
             ),
 
             new MobjInfo( // MobjType.Nuke
-                16005, // doomEdNum
+                16023, // doomEdNum
                 MobjState.Nuke, // spawnState
                 1000, // spawnHealth
                 MobjState.Null, // seeState
@@ -3744,6 +3744,32 @@ namespace ManagedDoom
                 0, // damage
                 Sfx.NONE, // activeSound
                 MobjFlags.Special, // flags
+                MobjState.Null // raiseState
+            ),
+
+            new MobjInfo( // MobjType.SpawnPoint
+                16030, // doomEdNum
+                MobjState.Nuke, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                0, // flags
                 MobjState.Null // raiseState
             ),
 

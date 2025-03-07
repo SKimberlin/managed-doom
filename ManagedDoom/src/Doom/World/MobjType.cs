@@ -164,5 +164,6 @@ namespace ManagedDoom
         InstaKill,
         DoublePoints,
         Nuke,
+        SpawnPoint,
     }
 }
