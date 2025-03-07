@@ -38,7 +38,7 @@ namespace ManagedDoom
         private YesNoConfirm endGameConfirm;
         private QuitConfirm quitConfirm;
 
-        private YesNoConfirm testshop;
+        private ShopYesNoMenu testshop;
 
         private MenuDef current;
 
@@ -59,10 +59,8 @@ namespace ManagedDoom
         {
             this.doom = doom;
 
-            testshop = new YesNoConfirm(
-                this,
-                "Buy Something WILL YOU!!!\n-20 Credits\n" + DoomInfo.Strings.PRESSYN,
-                () => doom.Options.Players[0].RemoveCurrency(20));
+            testshop = new ShopYesNoMenu(
+                this);
 
             thisIsShareware = new PressAnyKey(
                 this,
@@ -486,8 +484,10 @@ namespace ManagedDoom
             StartSound(Sfx.SWTCHN);
         }
 
-        public void Shop()
+        public void Shop(WeaponType weapon, Player player)
         {
+            testshop.SetUpShop("Buy " + weapon.ToString() + " for 10 credits?\n\n" + DoomInfo.Strings.PRESSYN,player);
+
             SetCurrent(testshop);
             Open();
             StartSound(Sfx.TINK);
