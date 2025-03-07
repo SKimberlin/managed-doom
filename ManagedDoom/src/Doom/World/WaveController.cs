@@ -40,7 +40,7 @@ namespace ManagedDoom {
             spawnPoints = new List<MapThing>();
             foreach ( var thing in world.Map.Things ) {
 
-                if ( thing.Type != 3004 && thing.Type != 9 && thing.Type != 64 && thing.Type != 66 ) continue;
+                if ( thing.Type != 3001 && thing.Type != 9 && thing.Type != 64 && thing.Type != 66 ) continue;
 
                 spawnPoints.Add( thing );
 
