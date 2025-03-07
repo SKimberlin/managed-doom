@@ -293,14 +293,13 @@ namespace ManagedDoom
 
 			// Do the damage.
 			target.Health -= damage;
-            OnMobDamaged?.Invoke( source, target );
             if (target.Health <= 0)
 			{
 				KillMobj(source, target);
 				return;
 			}
 
-			if ((world.Random.Next() < target.Info.PainChance) &&
+            if ((world.Random.Next() < target.Info.PainChance) &&
 				(target.Flags & MobjFlags.SkullFly) == 0)
 			{
 				// Fight back!
@@ -326,7 +325,10 @@ namespace ManagedDoom
 					target.SetState(target.Info.SeeState);
 				}
 			}
-		}
+
+            OnMobDamaged?.Invoke( source, target );
+
+        }
 
 
 		/// <summary>

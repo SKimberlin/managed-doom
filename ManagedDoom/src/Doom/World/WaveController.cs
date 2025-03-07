@@ -28,7 +28,8 @@ namespace ManagedDoom {
         private MobjType[] monsterTypes = {
 
             MobjType.Zombie,
-            MobjType.Dog
+            MobjType.Zombie,
+            //MobjType.Dog, - Enable when implemented
 
         };
 
@@ -99,7 +100,7 @@ namespace ManagedDoom {
 
             if ( target.Player != null || target.Health <= 0 ) return;
 
-            if ( instaKillStartTime + instaKillTime > world.LevelTime ) {
+            if (instaKillStartTime + instaKillTime > world.LevelTime ) {
 
                 world.ThingInteraction.DamageMobj( target, source, source, target.Health );
 
@@ -153,9 +154,11 @@ namespace ManagedDoom {
 
         public void ActivateNuke() {
 
+            foreach ( Mobj mobj in spawnedMobs ) world.ThingInteraction.DamageMobj( mobj, null, null, mobj.Health );
+
             monsterSpawnCount = 0;
             monstersSpawned = 0;
-            foreach ( Mobj mobj in spawnedMobs ) world.ThingInteraction.DamageMobj( mobj, null, null, mobj.Health ); ;
+
             foreach ( Player player in world.Options.Players ) {
 
                 player.Currency += nukePoints;
@@ -169,8 +172,7 @@ namespace ManagedDoom {
 
             if ( !Started ) return;
 
-
-            if ( monstersSpawned == 0 && monsterSpawnCount == 0 ) {
+            if ( monstersSpawned <= 0 && monsterSpawnCount <= 0 ) {
 
                 waveStartTime = world.LevelTime;
                 StartWave();
@@ -201,7 +203,7 @@ namespace ManagedDoom {
         private void SpawnMonster() {
 
             MobjType type = monsterTypes[0];
-            if ( wave % specialMonstersWaveInterval == 0 ) type = MobjType.Troop;
+            if ( wave % specialMonstersWaveInterval == 0 ) type = monsterTypes[1];
             else if (wave > 10) {
 
                 type = (new Random().Next(10) < 9) ? monsterTypes[0] : monsterTypes[1];
@@ -210,7 +212,7 @@ namespace ManagedDoom {
 
             MapThing spawnPoint = spawnPoints[ new Random().Next( spawnPoints.Count ) ];
 
-            if ( !CheckOpenPoint( Fixed.FromInt( 20 ), spawnPoint.X, spawnPoint.Y ) ) return;
+            if ( !CheckOpenPoint( Fixed.FromInt( 30 ), spawnPoint.X, spawnPoint.Y ) ) return;
 
             var mobj = world.ThingAllocation.SpawnMobj( spawnPoint.X, spawnPoint.Y, Mobj.OnFloorZ, type );
             mobj.SpawnPoint = spawnPoint;
