@@ -128,7 +128,7 @@ namespace ManagedDoom
 
 					if ( source == null || source.Player == null ) return;
 
-					int r = new Random().Next(4);
+					int r = new Random().Next(200);
 					switch ( r ) {
 
 						case 0:
