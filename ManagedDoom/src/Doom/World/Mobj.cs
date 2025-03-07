@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace ManagedDoom
 {
@@ -169,6 +170,9 @@ namespace ManagedDoom
         private Fixed oldX;
         private Fixed oldY;
         private Fixed oldZ;
+
+        private List<Vertex> vertexes;
+        private int limit;
 
         private bool regen = false;
         private int regenDelay = GameConst.TicRate * 5; // After player takes damage
@@ -657,6 +661,18 @@ namespace ManagedDoom
         {
             get => tracer;
             set => tracer = value;
+        }
+
+        public List<Vertex> Vertexes
+        {
+            get => vertexes;
+            set => vertexes = value;
+        }
+
+        public int Limit
+        {
+            get => limit;
+            set => limit = value;
         }
     }
 }
