@@ -10,6 +10,7 @@ namespace ManagedDoom {
 
         private int monsterSpawnCount = 0;
         private int monstersSpawned = 0;
+        private List<Mobj> spawnedMobs = new List<Mobj>();
 
         private int currentMonstersPerWave = 2;
         private int monstersPerWaveIncrease = 3;
@@ -23,6 +24,7 @@ namespace ManagedDoom {
         private int waveStartTime;
         private int waveDelay = GameConst.TicRate * 5;
 
+
         private MobjType[] monsterTypes = {
 
             MobjType.Zombie,
@@ -30,8 +32,24 @@ namespace ManagedDoom {
 
         };
 
+        private int currencyPerHit = 10;
+        private int currencyPerKill = 50;
+
         private World world;
         private List<MapThing> spawnPoints;
+
+
+        // Powerups
+
+        private int instaKillTime = GameConst.TicRate * 10;
+        private int instaKillStartTime;
+
+        private int doublePointsTime = GameConst.TicRate * 10;
+        private int doublePointsStartTime;
+
+        private int nukePoints = 200;
+
+
 
         public WaveController( World world ) {
 
@@ -53,14 +71,95 @@ namespace ManagedDoom {
             if ( !Started ) {
 
                 Started = true;
+                instaKillStartTime = -instaKillTime;
+                doublePointsStartTime = -doublePointsTime;
+
+                world.ThingInteraction.OnMobKilled += OnMobKilled;
+                world.ThingInteraction.OnMobDamaged += onMobDamaged;
+
 
             }
 
-            world.Options.Players[0].OnMobKilled += ( mobj ) => {
+        }
 
-                monstersSpawned--;
+        private void OnMobKilled( Mobj source, Mobj target ) {
 
-            };
+            if ( source == null || source.Player == null ) return;
+
+            GivePlayerPoints( source.Player, currencyPerKill );
+
+            monstersSpawned--;
+            spawnedMobs.Remove( target );
+
+        }
+
+        private void onMobDamaged( Mobj source, Mobj target ) {
+
+            if ( target.Player != null || target.Health <= 0 ) return;
+
+            if ( instaKillStartTime + instaKillTime > world.LevelTime ) {
+
+                world.ThingInteraction.DamageMobj( target, source, source, target.Health );
+
+            }
+
+            if ( source.Player == null ) return;
+
+            GivePlayerPoints( source.Player, currencyPerHit );
+
+        }
+
+        private void GivePlayerPoints( Player player, int points ) {
+
+            player.Currency += ( doublePointsStartTime + doublePointsTime > world.LevelTime ) ? points * 2 : points;
+
+        }
+
+        public void ActivateMaxAmmo() {
+
+
+
+
+            foreach ( Player player in world.Options.Players ) {
+
+                for ( var i = 0; i < player.WeaponOwned.Length; i++ ) {
+
+                    if ( !player.WeaponOwned[i] ) continue;
+                    if ( DoomInfo.WeaponInfos[i].Ammo == AmmoType.NoAmmo ) continue;
+                    player.Ammo[(int) DoomInfo.WeaponInfos[i].Ammo] = player.MaxAmmo[(int) DoomInfo.WeaponInfos[i].Ammo];
+
+                }
+                player.SendMessage( "Max Ammo Activated!" );
+
+            }
+
+        }
+
+        public void ActivateInstaKill() {
+
+            instaKillStartTime = world.LevelTime;
+            foreach ( Player player in world.Options.Players ) player.SendMessage( "InstaKill Activated!" );
+
+        }
+
+        public void ActivateDoublePoints() {
+
+            doublePointsStartTime = world.LevelTime;
+            foreach ( Player player in world.Options.Players ) player.SendMessage( "Double Points Activated!" );
+
+        }
+
+        public void ActivateNuke() {
+
+            monsterSpawnCount = 0;
+            monstersSpawned = 0;
+            foreach ( Mobj mobj in spawnedMobs ) world.ThingInteraction.DamageMobj( mobj, null, null, mobj.Health ); ;
+            foreach ( Player player in world.Options.Players ) {
+
+                player.Currency += nukePoints;
+                player.SendMessage( "Nuke Activated!" );
+
+            }
 
         }
 
@@ -85,7 +184,7 @@ namespace ManagedDoom {
 
         }
 
-        public void StartWave() {
+        private void StartWave() {
 
             wave++;
             world.Options.Players[0].SendMessage( "Wave " + wave + " Starting..." );
@@ -97,7 +196,7 @@ namespace ManagedDoom {
 
         }
 
-        public void SpawnMonster() {
+        private void SpawnMonster() {
 
             MobjType type = monsterTypes[0];
             if ( wave % specialMonstersWaveInterval == 0 ) type = MobjType.Troop;
@@ -114,12 +213,14 @@ namespace ManagedDoom {
             var mobj = world.ThingAllocation.SpawnMobj( spawnPoint.X, spawnPoint.Y, Mobj.OnFloorZ, type );
             mobj.SpawnPoint = spawnPoint;
             mobj.Health = (int) (float) currentMonsterHealthMultiplyer * mobj.Health;
+
+            spawnedMobs.Add( mobj );
             monstersSpawned++;
             monsterSpawnCount--;
 
         }
 
-        public bool CheckOpenPoint( Fixed radius, Fixed x, Fixed y ) {
+        private bool CheckOpenPoint( Fixed radius, Fixed x, Fixed y ) {
 
             var thinkers = world.Thinkers;
             foreach ( Thinker thinker in thinkers ) {
@@ -141,8 +242,6 @@ namespace ManagedDoom {
             return true;
 
         }
-
-
 
     }
 

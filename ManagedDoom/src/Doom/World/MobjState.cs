@@ -1002,5 +1002,8 @@ namespace ManagedDoom
         ZombieAtk2,
         ZombieAtk3,
         MaxAmmo,
+        InstaKill,
+        DoublePoints,
+        Nuke,
     }
 }

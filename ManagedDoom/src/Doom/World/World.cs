@@ -368,6 +368,7 @@ namespace ManagedDoom
         public StatusBar StatusBar => statusBar;
         public AutoMap AutoMap => autoMap;
         public Cheat Cheat => cheat;
+        public WaveController WaveController => waveController;
 
         public int TotalKills
         {

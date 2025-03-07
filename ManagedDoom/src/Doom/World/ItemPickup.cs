@@ -740,15 +740,24 @@ namespace ManagedDoom
                     sound = Sfx.WPNUP;
                     break;
 
-                case Sprite.MXAM:
-                for ( var i = 0; i < player.WeaponOwned.Length; i++ ) {
-                    
-                    if ( !player.WeaponOwned[i] ) continue;
-                    if ( DoomInfo.WeaponInfos[i].Ammo == AmmoType.NoAmmo ) continue;
-                    player.Ammo[ (int) DoomInfo.WeaponInfos[i].Ammo] = player.MaxAmmo[ (int) DoomInfo.WeaponInfos[i].Ammo];
+                // Custom Powerups.
 
-                }
+                case Sprite.MXAM:
+                world.WaveController.ActivateMaxAmmo();
                 break;
+
+                case Sprite.INSK:
+                world.WaveController.ActivateInstaKill();
+                break;
+
+                case Sprite.DBPT:
+                world.WaveController.ActivateDoublePoints();
+                break;
+
+                case Sprite.NUKE:
+                world.WaveController.ActivateNuke();
+                break;
+
 
                 default:
                     throw new Exception("Unknown gettable thing!");

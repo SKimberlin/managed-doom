@@ -161,5 +161,8 @@ namespace ManagedDoom
         Zombie,
         Dog,
         MaxAmmo,
+        InstaKill,
+        DoublePoints,
+        Nuke,
     }
 }
