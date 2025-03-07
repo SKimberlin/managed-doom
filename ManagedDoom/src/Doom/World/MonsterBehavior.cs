@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TrippyGL;
 
 namespace ManagedDoom
 {
@@ -2229,16 +2230,18 @@ namespace ManagedDoom
             var oldDir = actor.MoveDir;
             var turnAround = opposite[(int)oldDir];
 
-            //var deltaX = actor.Vertexes[0].X - actor.X;
-            //var deltaY = actor.Vertexes[0].Y - actor.Y;
+            var deltaX = actor.Vertexes[0].X - actor.X;
+            var deltaY = actor.Vertexes[0].Y - actor.Y;
+            actor.Limit++;
 
-            var deltaX = actor.X - actor.Vertexes[0].X;
-            var deltaY = actor.Y - actor.Vertexes[0].Y;
+            //var deltaX = actor.X - actor.Vertexes[0].X;
+            //var deltaY = actor.Y - actor.Vertexes[0].Y;
 
             // Remove vertex if close enough
-            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))))
+            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))) || actor.Limit > 1000)
             {
                 actor.Vertexes.RemoveAt(0);
+                actor.Limit = 0;
                 if (actor.Vertexes.Count == 0)
                 {
                     actor.MoveDir = Direction.None;
@@ -2346,57 +2349,62 @@ namespace ManagedDoom
             actor.MoveDir = Direction.None;
         }
 
-        unsafe public void AStar(Mobj actor)
+        public void AStar(Mobj actor)
         {
             if (actor.Target == null) return;
+
             Vertex start = new Vertex(actor.X, actor.Y);
             Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
+            double totalSqrDistance = Math.Pow(end.X.ToDouble() - start.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - start.Y.ToDouble(), 2);
+            Fixed totalDistance = Fixed.FromDouble(Math.Sqrt(Math.Abs(totalSqrDistance)));
 
-            Fixed distanceSqr = Fixed.Sqrt(Fixed.Abs((start.X - end.X) * (start.X - end.X) + (start.Y - end.Y) * (start.Y - end.Y)));
-
-            List<MapNode> searchedNodes = new List<MapNode>();
+            HashSet<(int, int)> visited = new HashSet<(int, int)>();
             PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>(new FixedDistanceCompare());
-            MapNode current = new MapNode(start, null, distanceSqr, Fixed.Zero);
+            MapNode current = new MapNode(start, null, totalDistance, Fixed.Zero);
+            MapNode bestNode = current;
 
             priorityQueue.Enqueue(current, current.F);
-            searchedNodes.Add(current);
-            while (priorityQueue.Count > 0 && searchedNodes.Count < 200)
+            int iter = 0;
+            while (priorityQueue.Count > 0 && iter < 100)
             {
+                Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
+
                 current = priorityQueue.Dequeue();
-                if (current.H < Fixed.One * 3)
+
+                if (current.H < bestNode.H) 
+                    bestNode = current;
+
+                if (current.H < Fixed.One * 32)
                 {
                     ReconstructPath(actor, current);
                     return;
                 }
 
+                visited.Add((current.Position.X.ToIntFloor(), current.Position.Y.ToIntFloor()));
+
                 foreach (Vertex vertex in GetNeighbors(current.Position))
                 {
-                    if (!world.ThingMovement.CheckPosition(actor, current.Position.X, current.Position.Y)) continue;
-                    Fixed distanceToEnd = Fixed.Sqrt(Fixed.Abs((vertex.X - end.X) * (vertex.X - end.X) + (vertex.Y - end.Y) * (vertex.Y - end.Y)));
-                    Fixed distanceToStart = Fixed.Sqrt(Fixed.Abs((vertex.X - start.X) * (vertex.X - start.X) + (vertex.Y - start.Y) * (vertex.Y - start.Y)));
+                    if (!CheckLineClear(actor, current.Position, vertex)) continue;
+
+                    if (visited.Contains((vertex.X.ToIntFloor(), vertex.Y.ToIntFloor()))) continue;
+
+                    double sqrDistance = Math.Pow(end.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToEnd = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
+
+                    sqrDistance = Math.Pow(start.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(start.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToStart = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
 
                     MapNode neighbor = new MapNode(vertex, current, distanceToEnd, distanceToStart);
 
-                    if (!searchedNodes.Any(n => n.Position.X == neighbor.Position.X && n.Position.Y == neighbor.Position.Y))
-                    {
-                        priorityQueue.Enqueue(neighbor, neighbor.F);
-                        searchedNodes.Add(current);
-                    }
+                    priorityQueue.Enqueue(neighbor, neighbor.F);
                 }
+                iter++;
             }
 
-            MapNode returnNode = searchedNodes[0];
-            foreach (MapNode node in searchedNodes)
-            {
-                if (node.H < returnNode.H)
-                {
-                    returnNode = node;
-                }
-            }
-            ReconstructPath(actor, returnNode);
+            ReconstructPath(actor, bestNode);
         }
 
-        unsafe public void ReconstructPath(Mobj actor, MapNode node)
+        public void ReconstructPath(Mobj actor, MapNode node)
         {
             Stack<Vertex> path = new Stack<Vertex>();
             while (node != null)
@@ -2405,15 +2413,11 @@ namespace ManagedDoom
                 node = node.Last;
             }
             actor.Vertexes = new List<Vertex>(path);
-            foreach (Vertex vertex in actor.Vertexes)
-            {
-                Console.Out.WriteLine(vertex.X + " " + vertex.Y);
-            }
         }
 
         public List<Vertex> GetNeighbors(Vertex vertex)
         {
-            Fixed length = Fixed.One * 2;
+            Fixed length = Fixed.One * 30;
             return new List<Vertex> {
                     new Vertex(vertex.X - length, vertex.Y - length),
                     new Vertex(vertex.X, vertex.Y - length),
@@ -2425,6 +2429,25 @@ namespace ManagedDoom
                     new Vertex(vertex.X - length, vertex.Y),
             };
         }
+
+        public bool CheckLineClear(Mobj actor, Vertex start, Vertex end, int steps = 10)
+        {
+            Fixed stepX = (end.X - start.X) / steps;
+            Fixed stepY = (end.Y - start.Y) / steps;
+
+            for (int i = 0; i <= steps; i++)
+            {
+                Fixed checkX = start.X + (stepX * i);
+                Fixed checkY = start.Y + (stepY * i);
+
+                if (!world.ThingMovement.CheckPosition(actor, checkX, checkY))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
     }
 
     public class MapNode

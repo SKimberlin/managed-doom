@@ -172,6 +172,8 @@ namespace ManagedDoom
         private Fixed oldZ;
 
         private List<Vertex> vertexes;
+        private int limit;
+
         private bool regen = false;
         private int regenDelay = GameConst.TicRate * 5; // After player takes damage
         private int regenRate = GameConst.TicRate / 10; // Delay between regen
@@ -665,6 +667,12 @@ namespace ManagedDoom
         {
             get => vertexes;
             set => vertexes = value;
+        }
+
+        public int Limit
+        {
+            get => limit;
+            set => limit = value;
         }
     }
 }
