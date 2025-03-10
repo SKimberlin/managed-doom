@@ -92,7 +92,7 @@ namespace ManagedDoom
             {
                 cmds[i] = new TicCmd();
             }
-            game = new DoomGame(content, options);
+            game = new DoomGame(content, options, menu);
 
             wipeEffect = new WipeEffect(video.WipeBandCount, video.WipeHeight);
             wiping = false;

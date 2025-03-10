@@ -675,8 +675,9 @@ namespace ManagedDoom
                     }
                     player.SendMessage(DoomInfo.Strings.GOTBACKPACK);
                     break;
-
-                // Weapons.
+                
+                // Weapons. 
+                // will be editing these to make shops probably
                 case Sprite.BFUG:
                     if (!GiveWeapon(player, WeaponType.Bfg, false))
                     {
@@ -687,6 +688,8 @@ namespace ManagedDoom
                     break;
 
                 case Sprite.MGUN:
+                    //menu.Shop(WeaponType.Chaingun, player);
+                    //return;
                     if (!GiveWeapon(player, WeaponType.Chaingun, (special.Flags & MobjFlags.Dropped) != 0))
                     {
                         return;
