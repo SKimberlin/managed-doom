@@ -123,6 +123,9 @@ namespace ManagedDoom
         // use a translation table for player colormaps
         Translation = 0xc000000,
 
+        // Decay slowly drain health until death.
+        Decay = 0x4000000,
+
         // Hmm ???.
         TransShift = 26
     }
