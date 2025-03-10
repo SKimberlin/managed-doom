@@ -160,6 +160,9 @@ namespace ManagedDoom
         TLMP,
         TLP2,
         MXAM,
+        INSK,
+        DBPT,
+        NUKE,
         Count,
     }
 }
