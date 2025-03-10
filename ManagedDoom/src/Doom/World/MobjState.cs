@@ -1005,5 +1005,18 @@ namespace ManagedDoom
         InstaKill,
         DoublePoints,
         Nuke,
+        DogStnd2,
+        DogStnd,
+        DogRun2,
+        DogRun3,
+        DogRun4,
+        DogRun5,
+        DogRun6,
+        DogRun7,
+        DogRun8,
+        DogRun1,
+        DogAtk1,
+        DogAtk2,
+        DogAtk3,
     }
 }

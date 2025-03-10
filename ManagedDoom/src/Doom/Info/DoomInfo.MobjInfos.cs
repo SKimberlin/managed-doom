@@ -3603,7 +3603,7 @@ namespace ManagedDoom
                 MobjState.TrooDie1, // deathState
                 MobjState.TrooXdie1, // xdeathState
                 Sfx.BGDTH1, // deathSound
-                8, // speed
+                16, // speed
                 Fixed.FromInt(20), // radius
                 Fixed.FromInt(56), // height
                 100, // mass
@@ -3617,28 +3617,28 @@ namespace ManagedDoom
 
             new MobjInfo( // MobjType.Dog
                 16001, // doomEdNum
-                MobjState.SposStnd, // spawnState
-                30, // spawnHealth
-                MobjState.SposRun1, // seeState
-                Sfx.POSIT2, // seeSound
+                MobjState.DogStnd, // spawnState
+                10, // spawnHealth
+                MobjState.DogRun1, // seeState
+                Sfx.SGTSIT, // seeSound
                 8, // reactionTime
-                Sfx.NONE, // attackSound
-                MobjState.Null, // painState
-                170, // painChance
-                Sfx.POPAIN, // painSound
-                MobjState.Null, // meleeState
+                Sfx.SGTATK, // attackSound
+                MobjState.SargPain, // painState
+                180, // painChance
+                Sfx.DMPAIN, // painSound
+                MobjState.DogAtk1, // meleeState
                 MobjState.Null, // missileState
-                MobjState.Null, // deathState
+                MobjState.SargDie1, // deathState
                 MobjState.Null, // xdeathState
-                Sfx.PODTH2, // deathSound
-                8, // speed
-                Fixed.FromInt(20), // radius
+                Sfx.SGTDTH, // deathSound
+                24, // speed
+                Fixed.FromInt(30), // radius
                 Fixed.FromInt(56), // height
-                100, // mass
+                400, // mass
                 0, // damage
-                Sfx.POSACT, // activeSound
+                Sfx.DMACT, // activeSound
                 MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
-                MobjState.SposRaise1 // raiseState
+                MobjState.SargRaise1 // raiseState
             ),
 
             // Custom Powerup - Max Ammo

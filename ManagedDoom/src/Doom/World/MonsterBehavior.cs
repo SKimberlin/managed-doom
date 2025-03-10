@@ -16,6 +16,10 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using TrippyGL;
 
 namespace ManagedDoom
 {
@@ -163,8 +167,8 @@ namespace ManagedDoom
                 return;
             }
 
-            // Go into chase state.
-            seeYou:
+        // Go into chase state.
+        seeYou:
             if (actor.Info.SeeSound != 0)
             {
                 int sound;
@@ -694,7 +698,7 @@ namespace ManagedDoom
                 return;
             }
 
-            noMissile:
+        noMissile:
             // Possibly choose another target.
             if (world.Options.NetGame &&
                 actor.Threshold == 0 &&
@@ -2145,6 +2149,16 @@ namespace ManagedDoom
                 return;
             }
 
+            if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
+            {
+                if (actor.Vertexes == null || actor.Vertexes.Count == 0) AStar(actor);
+                else FollowPath(actor);   
+
+                return;
+            }
+
+            actor.Vertexes = null;
+
             // Do not attack twice in a row.
             if ((actor.Flags & MobjFlags.JustAttacked) != 0)
             {
@@ -2203,6 +2217,264 @@ namespace ManagedDoom
 
                 return;
             }
+        }
+
+        public void FollowPath(Mobj actor)
+        {
+            if (actor.Vertexes.Count == 0)
+            {
+                actor.MoveDir = Direction.None;
+                return;
+            }
+
+            var oldDir = actor.MoveDir;
+            var turnAround = opposite[(int)oldDir];
+
+            var deltaX = actor.Vertexes[0].X - actor.X;
+            var deltaY = actor.Vertexes[0].Y - actor.Y;
+            actor.Limit++;
+
+            //var deltaX = actor.X - actor.Vertexes[0].X;
+            //var deltaY = actor.Y - actor.Vertexes[0].Y;
+
+            // Remove vertex if close enough
+            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))) || actor.Limit > 1000)
+            {
+                actor.Vertexes.RemoveAt(0);
+                actor.Limit = 0;
+                if (actor.Vertexes.Count == 0)
+                {
+                    actor.MoveDir = Direction.None;
+                    return;
+                }
+            }
+
+            // Set movement choices
+            if (deltaX > Fixed.FromInt(10))
+            {
+                choices[1] = Direction.East;
+            }
+            else if (deltaX < Fixed.FromInt(-10))
+            {
+                choices[1] = Direction.west;
+            }
+            else
+            {
+                choices[1] = Direction.None;
+            }
+
+            if (deltaY < Fixed.FromInt(-10))
+            {
+                choices[2] = Direction.South;
+            }
+            else if (deltaY > Fixed.FromInt(10))
+            {
+                choices[2] = Direction.North;
+            }
+            else
+            {
+                choices[2] = Direction.None;
+            }
+
+            // Try diagonal movement first
+            if (choices[1] != Direction.None && choices[2] != Direction.None)
+            {
+                var a = (deltaY < Fixed.Zero) ? 1 : 0;
+                var b = (deltaX > Fixed.Zero) ? 1 : 0;
+                actor.MoveDir = diags[(a << 1) + b];
+
+                if (actor.MoveDir != turnAround && TryWalk(actor))
+                {
+                    return;
+                }
+            }
+
+            // Randomize movement priority
+            if (world.Random.Next() > 200 || Fixed.Abs(deltaY) > Fixed.Abs(deltaX))
+            {
+                var temp = choices[1];
+                choices[1] = choices[2];
+                choices[2] = temp;
+            }
+
+            // Prevent moving backwards
+            if (choices[1] == turnAround) choices[1] = Direction.None;
+            if (choices[2] == turnAround) choices[2] = Direction.None;
+
+            // Try individual axis movement
+            if (choices[1] != Direction.None)
+            {
+                actor.MoveDir = choices[1];
+                if (TryWalk(actor)) return;
+            }
+
+            if (choices[2] != Direction.None)
+            {
+                actor.MoveDir = choices[2];
+                if (TryWalk(actor)) return;
+            }
+
+            // If direct path fails, try the last direction
+            if (oldDir != Direction.None)
+            {
+                actor.MoveDir = oldDir;
+                if (TryWalk(actor)) return;
+            }
+
+            // Last resort: pick a random direction
+            if ((world.Random.Next() & 1) != 0)
+            {
+                for (var dir = (int)Direction.East; dir <= (int)Direction.Southeast; dir++)
+                {
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
+                }
+            }
+            else
+            {
+                for (var dir = (int)Direction.Southeast; dir >= (int)Direction.East; dir--)
+                {
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
+                }
+            }
+
+            // If no movement is possible, stop moving
+            actor.MoveDir = Direction.None;
+        }
+
+        public void AStar(Mobj actor)
+        {
+            if (actor.Target == null) return;
+
+            Vertex start = new Vertex(actor.X, actor.Y);
+            Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
+            double totalSqrDistance = Math.Pow(end.X.ToDouble() - start.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - start.Y.ToDouble(), 2);
+            Fixed totalDistance = Fixed.FromDouble(Math.Sqrt(Math.Abs(totalSqrDistance)));
+
+            HashSet<(int, int)> visited = new HashSet<(int, int)>();
+            PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>(new FixedDistanceCompare());
+            MapNode current = new MapNode(start, null, totalDistance, Fixed.Zero);
+            MapNode bestNode = current;
+
+            priorityQueue.Enqueue(current, current.F);
+            int iter = 0;
+            while (priorityQueue.Count > 0 && iter < 100)
+            {
+                Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
+
+                current = priorityQueue.Dequeue();
+
+                if (current.H < bestNode.H) 
+                    bestNode = current;
+
+                if (current.H < Fixed.One * 32)
+                {
+                    ReconstructPath(actor, current);
+                    return;
+                }
+
+                visited.Add((current.Position.X.ToIntFloor(), current.Position.Y.ToIntFloor()));
+
+                foreach (Vertex vertex in GetNeighbors(current.Position))
+                {
+                    if (!CheckLineClear(actor, current.Position, vertex)) continue;
+
+                    if (visited.Contains((vertex.X.ToIntFloor(), vertex.Y.ToIntFloor()))) continue;
+
+                    double sqrDistance = Math.Pow(end.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToEnd = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
+
+                    sqrDistance = Math.Pow(start.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(start.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToStart = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
+
+                    MapNode neighbor = new MapNode(vertex, current, distanceToEnd, distanceToStart);
+
+                    priorityQueue.Enqueue(neighbor, neighbor.F);
+                }
+                iter++;
+            }
+
+            ReconstructPath(actor, bestNode);
+        }
+
+        public void ReconstructPath(Mobj actor, MapNode node)
+        {
+            Stack<Vertex> path = new Stack<Vertex>();
+            while (node != null)
+            {
+                path.Push(node.Position);
+                node = node.Last;
+            }
+            actor.Vertexes = new List<Vertex>(path);
+        }
+
+        public List<Vertex> GetNeighbors(Vertex vertex)
+        {
+            Fixed length = Fixed.One * 30;
+            return new List<Vertex> {
+                    new Vertex(vertex.X - length, vertex.Y - length),
+                    new Vertex(vertex.X, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y),
+                    new Vertex(vertex.X + length, vertex.Y + length),
+                    new Vertex(vertex.X, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y),
+            };
+        }
+
+        public bool CheckLineClear(Mobj actor, Vertex start, Vertex end, int steps = 10)
+        {
+            Fixed stepX = (end.X - start.X) / steps;
+            Fixed stepY = (end.Y - start.Y) / steps;
+
+            for (int i = 0; i <= steps; i++)
+            {
+                Fixed checkX = start.X + (stepX * i);
+                Fixed checkY = start.Y + (stepY * i);
+
+                if (!world.ThingMovement.CheckPosition(actor, checkX, checkY))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    }
+
+    public class MapNode
+    {
+        public Vertex Position { get; }
+        public MapNode? Last { get; }
+        public Fixed G { get; } //Distance from start
+        public Fixed H { get; } //Distance to target
+        public Fixed F { get; } //
+
+        public MapNode(Vertex position, MapNode last, Fixed distanceToEnd, Fixed distanceToStart)
+        {
+            this.Position = position;
+            this.Last = last;
+            G = distanceToStart;
+            H = distanceToEnd;
+            F = distanceToEnd + distanceToStart;
+        }
+    }
+
+    class FixedDistanceCompare : IComparer<Fixed>
+    {
+        public int Compare(Fixed d1, Fixed d2)
+        {
+            if (d1 > d2) return 1;
+            else if (d1 < d2) return -1;
+            return 0;
         }
     }
 }
