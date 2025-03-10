@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace ManagedDoom {
 
@@ -7,9 +8,9 @@ namespace ManagedDoom {
 
         private int wave = 0;
 
-        private int monstersKilledTotal = 0;
-        private int monstersKilledNeeeded = 0;
         private int monsterSpawnCount = 0;
+        private int monstersSpawned = 0;
+        private List<Mobj> spawnedMobs = new List<Mobj>();
 
         private int currentMonstersPerWave = 2;
         private int monstersPerWaveIncrease = 3;
@@ -23,10 +24,33 @@ namespace ManagedDoom {
         private int waveStartTime;
         private int waveDelay = GameConst.TicRate * 5;
 
-        private MobjType currentMonsterType = MobjType.Possessed;
+
+        private MobjType[] monsterTypes = {
+
+            MobjType.Zombie,
+            MobjType.Zombie,
+            //MobjType.Dog, - Enable when implemented
+
+        };
+
+        private int currencyPerHit = 10;
+        private int currencyPerKill = 50;
 
         private World world;
         private List<MapThing> spawnPoints;
+
+
+        // Powerups
+
+        private int instaKillTime = GameConst.TicRate * 10;
+        private int instaKillStartTime;
+
+        private int doublePointsTime = GameConst.TicRate * 10;
+        private int doublePointsStartTime;
+
+        private int nukePoints = 200;
+
+
 
         public WaveController( World world ) {
 
@@ -35,7 +59,7 @@ namespace ManagedDoom {
             spawnPoints = new List<MapThing>();
             foreach ( var thing in world.Map.Things ) {
 
-                if ( thing.Type != 3004 && thing.Type != 9 ) continue; //Replace with ID for Spawnpoint
+                if ( thing.Type != 16030 ) continue;
 
                 spawnPoints.Add( thing );
 
@@ -45,9 +69,100 @@ namespace ManagedDoom {
 
         public void Start() {
 
+            if (spawnPoints.Count == 0 ) Console.WriteLine( "No spawn points found!" );
+
             if ( !Started ) {
 
                 Started = true;
+                instaKillStartTime = -instaKillTime;
+                doublePointsStartTime = -doublePointsTime;
+
+                world.ThingInteraction.OnMobKilled += OnMobKilled;
+                world.ThingInteraction.OnMobDamaged += onMobDamaged;
+
+
+            }
+
+        }
+
+        private void OnMobKilled( Mobj source, Mobj target ) {
+
+            if ( source == null || source.Player == null ) return;
+
+            GivePlayerPoints( source.Player, currencyPerKill );
+
+            monstersSpawned--;
+            spawnedMobs.Remove( target );
+
+        }
+
+        private void onMobDamaged( Mobj source, Mobj target ) {
+
+            if ( target.Player != null || target.Health <= 0 ) return;
+
+            if (instaKillStartTime + instaKillTime > world.LevelTime ) {
+
+                world.ThingInteraction.DamageMobj( target, source, source, target.Health );
+
+            }
+
+            if ( source.Player == null ) return;
+
+            GivePlayerPoints( source.Player, currencyPerHit );
+
+        }
+
+        private void GivePlayerPoints( Player player, int points ) {
+
+            player.Currency += ( doublePointsStartTime + doublePointsTime > world.LevelTime ) ? points * 2 : points;
+
+        }
+
+        public void ActivateMaxAmmo() {
+
+
+
+
+            foreach ( Player player in world.Options.Players ) {
+
+                for ( var i = 0; i < player.WeaponOwned.Length; i++ ) {
+
+                    if ( !player.WeaponOwned[i] ) continue;
+                    if ( DoomInfo.WeaponInfos[i].Ammo == AmmoType.NoAmmo ) continue;
+                    player.Ammo[(int) DoomInfo.WeaponInfos[i].Ammo] = player.MaxAmmo[(int) DoomInfo.WeaponInfos[i].Ammo];
+
+                }
+                player.SendMessage( "Max Ammo Activated!" );
+
+            }
+
+        }
+
+        public void ActivateInstaKill() {
+
+            instaKillStartTime = world.LevelTime;
+            foreach ( Player player in world.Options.Players ) player.SendMessage( "InstaKill Activated!" );
+
+        }
+
+        public void ActivateDoublePoints() {
+
+            doublePointsStartTime = world.LevelTime;
+            foreach ( Player player in world.Options.Players ) player.SendMessage( "Double Points Activated!" );
+
+        }
+
+        public void ActivateNuke() {
+
+            foreach ( Mobj mobj in spawnedMobs ) world.ThingInteraction.DamageMobj( mobj, null, null, mobj.Health );
+
+            monsterSpawnCount = 0;
+            monstersSpawned = 0;
+
+            foreach ( Player player in world.Options.Players ) {
+
+                player.Currency += nukePoints;
+                player.SendMessage( "Nuke Activated!" );
 
             }
 
@@ -57,12 +172,11 @@ namespace ManagedDoom {
 
             if ( !Started ) return;
 
-
-            monstersKilledTotal = world.Options.Players[0].KillCount;
-            if ( monstersKilledNeeeded <= monstersKilledTotal ) {
+            if ( monstersSpawned <= 0 && monsterSpawnCount <= 0 ) {
 
                 waveStartTime = world.LevelTime;
                 StartWave();
+
 
             }
 
@@ -74,7 +188,7 @@ namespace ManagedDoom {
 
         }
 
-        public void StartWave() {
+        private void StartWave() {
 
             wave++;
             world.Options.Players[0].SendMessage( "Wave " + wave + " Starting..." );
@@ -82,28 +196,35 @@ namespace ManagedDoom {
             currentMonstersPerWave += monstersPerWaveIncrease;
 
             monsterSpawnCount = currentMonstersPerWave;
-            monstersKilledNeeeded = monstersKilledTotal + currentMonstersPerWave;
             currentMonsterHealthMultiplyer += monsterHealthMultiplyerIncrease;
 
         }
 
-        public void SpawnMonster() {
+        private void SpawnMonster() {
 
-            MobjType type = currentMonsterType;
-            if ( wave % specialMonstersWaveInterval == 0 ) type = MobjType.Troop;
+            MobjType type = monsterTypes[0];
+            if ( wave % specialMonstersWaveInterval == 0 ) type = monsterTypes[1];
+            else if (wave > 10) {
+
+                type = (new Random().Next(10) < 9) ? monsterTypes[0] : monsterTypes[1];
+
+            }
 
             MapThing spawnPoint = spawnPoints[ new Random().Next( spawnPoints.Count ) ];
 
-            if ( !CheckOpenPoint( Fixed.FromInt( 20 ), spawnPoint.X, spawnPoint.Y ) ) return;
+            if ( !CheckOpenPoint( Fixed.FromInt( 30 ), spawnPoint.X, spawnPoint.Y ) ) return;
 
             var mobj = world.ThingAllocation.SpawnMobj( spawnPoint.X, spawnPoint.Y, Mobj.OnFloorZ, type );
             mobj.SpawnPoint = spawnPoint;
             mobj.Health = (int) (float) currentMonsterHealthMultiplyer * mobj.Health;
+
+            spawnedMobs.Add( mobj );
+            monstersSpawned++;
             monsterSpawnCount--;
 
         }
 
-        public bool CheckOpenPoint( Fixed radius, Fixed x, Fixed y ) {
+        private bool CheckOpenPoint( Fixed radius, Fixed x, Fixed y ) {
 
             var thinkers = world.Thinkers;
             foreach ( Thinker thinker in thinkers ) {
@@ -125,8 +246,6 @@ namespace ManagedDoom {
             return true;
 
         }
-
-
 
     }
 

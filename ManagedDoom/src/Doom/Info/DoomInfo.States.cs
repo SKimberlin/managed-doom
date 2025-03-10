@@ -992,7 +992,37 @@ namespace ManagedDoom
             new MobjStateDef(963, Sprite.TLP2, 32768, 4, null, null, MobjState.Tech2Lamp2, 0, 0), // State.Tech2Lamp
             new MobjStateDef(964, Sprite.TLP2, 32769, 4, null, null, MobjState.Tech2Lamp3, 0, 0), // State.Tech2Lamp2
             new MobjStateDef(965, Sprite.TLP2, 32770, 4, null, null, MobjState.Tech2Lamp4, 0, 0), // State.Tech2Lamp3
-            new MobjStateDef(966, Sprite.TLP2, 32771, 4, null, null, MobjState.Tech2Lamp, 0, 0) // State.Tech2Lamp4
+            new MobjStateDef(966, Sprite.TLP2, 32771, 4, null, null, MobjState.Tech2Lamp, 0, 0), // State.Tech2Lamp4
+            new MobjStateDef(967, Sprite.TROO, 0, 10, null, ma.ZombieLook, MobjState.ZombieStnd2, 0, 0), // State.ZombieStnd
+            new MobjStateDef(968, Sprite.TROO, 1, 10, null, ma.ZombieLook, MobjState.ZombieStnd, 0, 0), // State.ZombieStnd2
+            new MobjStateDef(969, Sprite.TROO, 0, 3, null, ma.ZombieChase, MobjState.ZombieRun2, 0, 0), // State.ZombieRun1
+            new MobjStateDef(970, Sprite.TROO, 0, 3, null, ma.ZombieChase, MobjState.ZombieRun3, 0, 0), // State.ZombieRun2
+            new MobjStateDef(970, Sprite.TROO, 1, 3, null, ma.ZombieChase, MobjState.ZombieRun4, 0, 0), // State.ZombieRun3
+            new MobjStateDef(971, Sprite.TROO, 1, 3, null, ma.ZombieChase, MobjState.ZombieRun5, 0, 0), // State.ZombieRun4
+            new MobjStateDef(972, Sprite.TROO, 2, 3, null, ma.ZombieChase, MobjState.ZombieRun6, 0, 0), // State.ZombieRun5
+            new MobjStateDef(973, Sprite.TROO, 2, 3, null, ma.ZombieChase, MobjState.ZombieRun7, 0, 0), // State.ZombieRun6
+            new MobjStateDef(974, Sprite.TROO, 3, 3, null, ma.ZombieChase, MobjState.ZombieRun8, 0, 0), // State.ZombieRun7
+            new MobjStateDef(975, Sprite.TROO, 3, 3, null, ma.ZombieChase, MobjState.ZombieRun1, 0, 0), // State.ZombieRun8
+            new MobjStateDef(976, Sprite.TROO, 4, 8, null, ma.FaceTarget, MobjState.ZombieAtk2, 0, 0), // State.ZombieAtk1
+            new MobjStateDef(977, Sprite.TROO, 5, 8, null, ma.FaceTarget, MobjState.ZombieAtk3, 0, 0), // State.ZombieAtk2
+            new MobjStateDef(978, Sprite.TROO, 6, 6, null, ma.ZombieAttack, MobjState.ZombieRun1, 0, 0), // State.ZombieAtk3
+            new MobjStateDef(979, Sprite.MXAM, 0, -1, null, null, MobjState.Null, 0, 0), // State.MaxAmmo
+            new MobjStateDef(980, Sprite.INSK, 0, -1, null, null, MobjState.Null, 0, 0), // State.InstaKill
+            new MobjStateDef(981, Sprite.DBPT, 0, -1, null, null, MobjState.Null, 0, 0), // State.DoublePoints
+            new MobjStateDef(982, Sprite.NUKE, 0, -1, null, null, MobjState.Null, 0, 0), // State.Nuke
+            new MobjStateDef(983, Sprite.SARG, 0, 10, null, ma.ZombieLook, MobjState.DogStnd2, 0, 0), // State.DogStnd
+            new MobjStateDef(984, Sprite.SARG, 1, 10, null, ma.ZombieLook, MobjState.DogStnd, 0, 0), // State.DogStnd2
+            new MobjStateDef(985, Sprite.SARG, 0, 2, null, ma.ZombieChase, MobjState.DogRun2, 0, 0), // State.DogRun1
+            new MobjStateDef(986, Sprite.SARG, 0, 2, null, ma.ZombieChase, MobjState.DogRun3, 0, 0), // State.DogRun2
+            new MobjStateDef(987, Sprite.SARG, 1, 2, null, ma.ZombieChase, MobjState.DogRun4, 0, 0), // State.DogRun3
+            new MobjStateDef(988, Sprite.SARG, 1, 2, null, ma.ZombieChase, MobjState.DogRun5, 0, 0), // State.DogRun4
+            new MobjStateDef(989, Sprite.SARG, 2, 2, null, ma.ZombieChase, MobjState.DogRun6, 0, 0), // State.DogRun5
+            new MobjStateDef(990, Sprite.SARG, 2, 2, null, ma.ZombieChase, MobjState.DogRun7, 0, 0), // State.DogRun6
+            new MobjStateDef(991, Sprite.SARG, 3, 2, null, ma.ZombieChase, MobjState.DogRun8, 0, 0), // State.DogRun7
+            new MobjStateDef(992, Sprite.SARG, 3, 2, null, ma.ZombieChase, MobjState.DogRun1, 0, 0), // State.DogRun8
+            new MobjStateDef(993, Sprite.SARG, 4, 8, null, ma.FaceTarget, MobjState.DogAtk2, 0, 0), // State.DogAtk1
+            new MobjStateDef(994, Sprite.SARG, 5, 8, null, ma.FaceTarget, MobjState.DogAtk3, 0, 0), // State.DogAtk2
+            new MobjStateDef(995, Sprite.SARG, 6, 8, null, ma.ZombieAttack, MobjState.DogRun1, 0, 0), // State.DogAtk3
         };
     }
 }

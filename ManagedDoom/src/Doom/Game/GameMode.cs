@@ -26,6 +26,7 @@ namespace ManagedDoom
         Commercial, // DOOM 2 retail, E1 M34
                     // DOOM 2 german edition not handled
         Retail, // DOOM 1 retail, E4, M36
-        Indetermined	// Well, no IWAD found.
+        Indetermined,	// Well, no IWAD found.
+        Zombies // Zombies game mode
     }
 }

@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Reflection.Emit;
 
 namespace ManagedDoom
 {
@@ -741,6 +742,25 @@ namespace ManagedDoom
                     player.SendMessage(DoomInfo.Strings.GOTSHOTGUN2);
                     sound = Sfx.WPNUP;
                     break;
+
+                // Custom Powerups.
+
+                case Sprite.MXAM:
+                world.WaveController.ActivateMaxAmmo();
+                break;
+
+                case Sprite.INSK:
+                world.WaveController.ActivateInstaKill();
+                break;
+
+                case Sprite.DBPT:
+                world.WaveController.ActivateDoublePoints();
+                break;
+
+                case Sprite.NUKE:
+                world.WaveController.ActivateNuke();
+                break;
+
 
                 default:
                     throw new Exception("Unknown gettable thing!");

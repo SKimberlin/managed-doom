@@ -16,6 +16,10 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using TrippyGL;
 
 namespace ManagedDoom
 {
@@ -99,6 +103,40 @@ namespace ManagedDoom
             }
         }
 
+        private bool LookForNearestPlayer(Mobj actor)
+        {
+            var players = world.Options.Players;
+
+            var count = 0;
+            var stop = (actor.LastLook - 1) & 3;
+
+            for (; ; actor.LastLook = (actor.LastLook + 1) & 3)
+            {
+                if (!players[actor.LastLook].InGame)
+                {
+                    continue;
+                }
+
+                if (count++ == 2 || actor.LastLook == stop)
+                {
+                    // Done looking.
+                    return false;
+                }
+
+                var player = players[actor.LastLook];
+
+                if (player.Health <= 0)
+                {
+                    // Player is dead.
+                    continue;
+                }
+
+                actor.Target = player.Mobj;
+
+                return true;
+            }
+        }
+
 
         public void Look(Mobj actor)
         {
@@ -129,8 +167,8 @@ namespace ManagedDoom
                 return;
             }
 
-            // Go into chase state.
-            seeYou:
+        // Go into chase state.
+        seeYou:
             if (actor.Info.SeeSound != 0)
             {
                 int sound;
@@ -660,7 +698,7 @@ namespace ManagedDoom
                 return;
             }
 
-            noMissile:
+        noMissile:
             // Possibly choose another target.
             if (world.Options.NetGame &&
                 actor.Threshold == 0 &&
@@ -2009,6 +2047,434 @@ namespace ManagedDoom
 
             // Remove self (i.e., cube).
             world.ThingAllocation.RemoveMobj(actor);
+        }
+
+        public void ZombieLook(Mobj actor)
+        {
+            // Any shot will wake up.
+            actor.Threshold = 0;
+
+            var target = actor.Subsector.Sector.SoundTarget;
+
+            if (target != null && (target.Flags & MobjFlags.Shootable) != 0)
+            {
+                actor.Target = target;
+
+                goto seeYou;
+            }
+
+            if (!LookForNearestPlayer(actor))
+            {
+                return;
+            }
+
+        // Go into chase state.
+        seeYou:
+            if (actor.Info.SeeSound != 0)
+            {
+                int sound;
+
+                switch (actor.Info.SeeSound)
+                {
+                    case Sfx.POSIT1:
+                    case Sfx.POSIT2:
+                    case Sfx.POSIT3:
+                        sound = (int)Sfx.POSIT1 + world.Random.Next() % 3;
+                        break;
+
+                    case Sfx.BGSIT1:
+                    case Sfx.BGSIT2:
+                        sound = (int)Sfx.BGSIT1 + world.Random.Next() % 2;
+                        break;
+
+                    default:
+                        sound = (int)actor.Info.SeeSound;
+                        break;
+                }
+
+                world.StartSound(actor, (Sfx)sound, SfxType.Voice);
+            }
+
+            actor.SetState(actor.Info.SeeState);
+        }
+
+        public void ZombieChase(Mobj actor)
+        {
+            if (actor.ReactionTime > 0)
+            {
+                actor.ReactionTime--;
+            }
+
+            // Modify target threshold.
+            if (actor.Threshold > 0)
+            {
+                if (actor.Target == null || actor.Target.Health <= 0)
+                {
+                    actor.Threshold = 0;
+                }
+                else
+                {
+                    actor.Threshold--;
+                }
+            }
+
+            // Turn towards movement direction if not there yet.
+            if ((int)actor.MoveDir < 8)
+            {
+                actor.Angle = new Angle((int)actor.Angle.Data & (7 << 29));
+
+                var delta = (int)(actor.Angle - new Angle((int)actor.MoveDir << 29)).Data;
+
+                if (delta > 0)
+                {
+                    actor.Angle -= new Angle(Angle.Ang90.Data / 2);
+                }
+                else if (delta < 0)
+                {
+                    actor.Angle += new Angle(Angle.Ang90.Data / 2);
+                }
+            }
+
+            if (actor.Target == null || (actor.Target.Flags & MobjFlags.Shootable) == 0)
+            {
+                // Look for a new target.
+                if (LookForNearestPlayer(actor))
+                {
+                    // Got a new target.
+                    return;
+                }
+
+                actor.SetState(actor.Info.SpawnState);
+
+                return;
+            }
+
+            if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
+            {
+                if (actor.Vertexes == null || actor.Vertexes.Count == 0) AStar(actor);
+                else FollowPath(actor);   
+
+                return;
+            }
+
+            actor.Vertexes = null;
+
+            // Do not attack twice in a row.
+            if ((actor.Flags & MobjFlags.JustAttacked) != 0)
+            {
+                actor.Flags &= ~MobjFlags.JustAttacked;
+
+                if (world.Options.Skill != GameSkill.Nightmare &&
+                    !world.Options.FastMonsters)
+                {
+                    NewChaseDir(actor);
+                }
+
+                return;
+            }
+
+            // Check for melee attack.
+            if (actor.Info.MeleeState != 0 && CheckMeleeRange(actor))
+            {
+                if (actor.Info.AttackSound != 0)
+                {
+                    world.StartSound(actor, actor.Info.AttackSound, SfxType.Weapon);
+                }
+
+                actor.SetState(actor.Info.MeleeState);
+
+                return;
+            }
+
+            if (--actor.MoveCount < 0 || !Move(actor))
+            {
+                NewChaseDir(actor);
+            }
+
+            // Make active sound.
+            if (actor.Info.ActiveSound != 0 && world.Random.Next() < 3)
+            {
+                world.StartSound(actor, actor.Info.ActiveSound, SfxType.Voice);
+            }
+
+        }
+
+        public void ZombieAttack(Mobj actor)
+        {
+            if (actor.Target == null)
+            {
+                return;
+            }
+
+            FaceTarget(actor);
+
+            if (CheckMeleeRange(actor))
+            {
+                world.StartSound(actor, Sfx.CLAW, SfxType.Weapon);
+
+                var damage = (world.Random.Next() % 8 + 1) * 3;
+                world.ThingInteraction.DamageMobj(actor.Target, actor, actor, damage);
+
+                return;
+            }
+        }
+
+        public void FollowPath(Mobj actor)
+        {
+            if (actor.Vertexes.Count == 0)
+            {
+                actor.MoveDir = Direction.None;
+                return;
+            }
+
+            var oldDir = actor.MoveDir;
+            var turnAround = opposite[(int)oldDir];
+
+            var deltaX = actor.Vertexes[0].X - actor.X;
+            var deltaY = actor.Vertexes[0].Y - actor.Y;
+            actor.Limit++;
+
+            //var deltaX = actor.X - actor.Vertexes[0].X;
+            //var deltaY = actor.Y - actor.Vertexes[0].Y;
+
+            // Remove vertex if close enough
+            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))) || actor.Limit > 1000)
+            {
+                actor.Vertexes.RemoveAt(0);
+                actor.Limit = 0;
+                if (actor.Vertexes.Count == 0)
+                {
+                    actor.MoveDir = Direction.None;
+                    return;
+                }
+            }
+
+            // Set movement choices
+            if (deltaX > Fixed.FromInt(10))
+            {
+                choices[1] = Direction.East;
+            }
+            else if (deltaX < Fixed.FromInt(-10))
+            {
+                choices[1] = Direction.west;
+            }
+            else
+            {
+                choices[1] = Direction.None;
+            }
+
+            if (deltaY < Fixed.FromInt(-10))
+            {
+                choices[2] = Direction.South;
+            }
+            else if (deltaY > Fixed.FromInt(10))
+            {
+                choices[2] = Direction.North;
+            }
+            else
+            {
+                choices[2] = Direction.None;
+            }
+
+            // Try diagonal movement first
+            if (choices[1] != Direction.None && choices[2] != Direction.None)
+            {
+                var a = (deltaY < Fixed.Zero) ? 1 : 0;
+                var b = (deltaX > Fixed.Zero) ? 1 : 0;
+                actor.MoveDir = diags[(a << 1) + b];
+
+                if (actor.MoveDir != turnAround && TryWalk(actor))
+                {
+                    return;
+                }
+            }
+
+            // Randomize movement priority
+            if (world.Random.Next() > 200 || Fixed.Abs(deltaY) > Fixed.Abs(deltaX))
+            {
+                var temp = choices[1];
+                choices[1] = choices[2];
+                choices[2] = temp;
+            }
+
+            // Prevent moving backwards
+            if (choices[1] == turnAround) choices[1] = Direction.None;
+            if (choices[2] == turnAround) choices[2] = Direction.None;
+
+            // Try individual axis movement
+            if (choices[1] != Direction.None)
+            {
+                actor.MoveDir = choices[1];
+                if (TryWalk(actor)) return;
+            }
+
+            if (choices[2] != Direction.None)
+            {
+                actor.MoveDir = choices[2];
+                if (TryWalk(actor)) return;
+            }
+
+            // If direct path fails, try the last direction
+            if (oldDir != Direction.None)
+            {
+                actor.MoveDir = oldDir;
+                if (TryWalk(actor)) return;
+            }
+
+            // Last resort: pick a random direction
+            if ((world.Random.Next() & 1) != 0)
+            {
+                for (var dir = (int)Direction.East; dir <= (int)Direction.Southeast; dir++)
+                {
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
+                }
+            }
+            else
+            {
+                for (var dir = (int)Direction.Southeast; dir >= (int)Direction.East; dir--)
+                {
+                    if ((Direction)dir != turnAround)
+                    {
+                        actor.MoveDir = (Direction)dir;
+                        if (TryWalk(actor)) return;
+                    }
+                }
+            }
+
+            // If no movement is possible, stop moving
+            actor.MoveDir = Direction.None;
+        }
+
+        public void AStar(Mobj actor)
+        {
+            if (actor.Target == null) return;
+
+            Vertex start = new Vertex(actor.X, actor.Y);
+            Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
+            double totalSqrDistance = Math.Pow(end.X.ToDouble() - start.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - start.Y.ToDouble(), 2);
+            Fixed totalDistance = Fixed.FromDouble(Math.Sqrt(Math.Abs(totalSqrDistance)));
+
+            HashSet<(int, int)> visited = new HashSet<(int, int)>();
+            PriorityQueue<MapNode, Fixed> priorityQueue = new PriorityQueue<MapNode, Fixed>(new FixedDistanceCompare());
+            MapNode current = new MapNode(start, null, totalDistance, Fixed.Zero);
+            MapNode bestNode = current;
+
+            priorityQueue.Enqueue(current, current.F);
+            int iter = 0;
+            while (priorityQueue.Count > 0 && iter < 100)
+            {
+                Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
+
+                current = priorityQueue.Dequeue();
+
+                if (current.H < bestNode.H) 
+                    bestNode = current;
+
+                if (current.H < Fixed.One * 32)
+                {
+                    ReconstructPath(actor, current);
+                    return;
+                }
+
+                visited.Add((current.Position.X.ToIntFloor(), current.Position.Y.ToIntFloor()));
+
+                foreach (Vertex vertex in GetNeighbors(current.Position))
+                {
+                    if (!CheckLineClear(actor, current.Position, vertex)) continue;
+
+                    if (visited.Contains((vertex.X.ToIntFloor(), vertex.Y.ToIntFloor()))) continue;
+
+                    double sqrDistance = Math.Pow(end.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(end.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToEnd = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
+
+                    sqrDistance = Math.Pow(start.X.ToDouble() - vertex.X.ToDouble(), 2) + Math.Pow(start.Y.ToDouble() - vertex.Y.ToDouble(), 2);
+                    Fixed distanceToStart = Fixed.FromDouble(Math.Sqrt(Math.Abs(sqrDistance)));
+
+                    MapNode neighbor = new MapNode(vertex, current, distanceToEnd, distanceToStart);
+
+                    priorityQueue.Enqueue(neighbor, neighbor.F);
+                }
+                iter++;
+            }
+
+            ReconstructPath(actor, bestNode);
+        }
+
+        public void ReconstructPath(Mobj actor, MapNode node)
+        {
+            Stack<Vertex> path = new Stack<Vertex>();
+            while (node != null)
+            {
+                path.Push(node.Position);
+                node = node.Last;
+            }
+            actor.Vertexes = new List<Vertex>(path);
+        }
+
+        public List<Vertex> GetNeighbors(Vertex vertex)
+        {
+            Fixed length = Fixed.One * 30;
+            return new List<Vertex> {
+                    new Vertex(vertex.X - length, vertex.Y - length),
+                    new Vertex(vertex.X, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y - length),
+                    new Vertex(vertex.X + length, vertex.Y),
+                    new Vertex(vertex.X + length, vertex.Y + length),
+                    new Vertex(vertex.X, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y + length),
+                    new Vertex(vertex.X - length, vertex.Y),
+            };
+        }
+
+        public bool CheckLineClear(Mobj actor, Vertex start, Vertex end, int steps = 10)
+        {
+            Fixed stepX = (end.X - start.X) / steps;
+            Fixed stepY = (end.Y - start.Y) / steps;
+
+            for (int i = 0; i <= steps; i++)
+            {
+                Fixed checkX = start.X + (stepX * i);
+                Fixed checkY = start.Y + (stepY * i);
+
+                if (!world.ThingMovement.CheckPosition(actor, checkX, checkY))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    }
+
+    public class MapNode
+    {
+        public Vertex Position { get; }
+        public MapNode? Last { get; }
+        public Fixed G { get; } //Distance from start
+        public Fixed H { get; } //Distance to target
+        public Fixed F { get; } //
+
+        public MapNode(Vertex position, MapNode last, Fixed distanceToEnd, Fixed distanceToStart)
+        {
+            this.Position = position;
+            this.Last = last;
+            G = distanceToStart;
+            H = distanceToEnd;
+            F = distanceToEnd + distanceToStart;
+        }
+    }
+
+    class FixedDistanceCompare : IComparer<Fixed>
+    {
+        public int Compare(Fixed d1, Fixed d2)
+        {
+            if (d1 > d2) return 1;
+            else if (d1 < d2) return -1;
+            return 0;
         }
     }
 }

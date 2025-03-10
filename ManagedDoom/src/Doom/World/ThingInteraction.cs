@@ -31,10 +31,13 @@ namespace ManagedDoom
 		}
 
 
-		/// <summary>
-		/// Called when the target is killed.
-		/// </summary>
-		public void KillMobj(Mobj source, Mobj target)
+        public event Action<Mobj, Mobj> OnMobKilled;
+        public event Action<Mobj, Mobj> OnMobDamaged;
+
+        /// <summary>
+        /// Called when the target is killed.
+        /// </summary>
+        public void KillMobj(Mobj source, Mobj target)
 		{
 			target.Flags &= ~(MobjFlags.Shootable | MobjFlags.Float | MobjFlags.SkullFly);
 
@@ -46,13 +49,14 @@ namespace ManagedDoom
 			target.Flags |= MobjFlags.Corpse | MobjFlags.DropOff;
 			target.Height = new Fixed(target.Height.Data >> 2);
 
-			if (source != null && source.Player != null)
+            OnMobKilled?.Invoke( source, target );
+
+            if (source != null && source.Player != null)
 			{
 				// Count for intermission.
 				if ((target.Flags & MobjFlags.CountKill) != 0)
 				{
-					source.Player.Currency += 10;
-					source.Player.KillCount++;
+                    source.Player.KillCount++;
 				}
 
 				if (target.Player != null)
@@ -120,7 +124,36 @@ namespace ManagedDoom
 					item = MobjType.Chaingun;
 					break;
 
-				default:
+				case MobjType.Zombie:
+
+					if ( source == null || source.Player == null ) return;
+
+					int r = new Random().Next(4);
+					switch ( r ) {
+
+						case 0:
+						item = MobjType.MaxAmmo;
+						break;
+
+						case 1: 
+						item = MobjType.InstaKill;
+						break;
+
+						case 2:
+						item = MobjType.DoublePoints;
+						break;
+
+						case 3:
+						item = MobjType.Nuke;
+						break;
+
+                    default:
+						return;
+
+                }
+					break;
+
+                default:
 					return;
 			}
 
@@ -156,7 +189,7 @@ namespace ManagedDoom
 				return;
 			}
 
-			if ((target.Flags & MobjFlags.SkullFly) != 0)
+            if ((target.Flags & MobjFlags.SkullFly) != 0)
 			{
 				target.MomX = target.MomY = target.MomZ = Fixed.Zero;
 			}
@@ -260,13 +293,13 @@ namespace ManagedDoom
 
 			// Do the damage.
 			target.Health -= damage;
-			if (target.Health <= 0)
+            if (target.Health <= 0)
 			{
 				KillMobj(source, target);
 				return;
 			}
 
-			if ((world.Random.Next() < target.Info.PainChance) &&
+            if ((world.Random.Next() < target.Info.PainChance) &&
 				(target.Flags & MobjFlags.SkullFly) == 0)
 			{
 				// Fight back!
@@ -292,7 +325,10 @@ namespace ManagedDoom
 					target.SetState(target.Info.SeeState);
 				}
 			}
-		}
+
+            OnMobDamaged?.Invoke( source, target );
+
+        }
 
 
 		/// <summary>

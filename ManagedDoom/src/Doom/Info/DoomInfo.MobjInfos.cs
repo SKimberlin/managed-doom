@@ -3583,7 +3583,195 @@ namespace ManagedDoom
                 Sfx.NONE, // activeSound
                 MobjFlags.NoBlockMap, // flags
                 MobjState.Null // raiseState
-            )
+            ),
+
+            // Custom Zombie Enemy
+
+            new MobjInfo( // MobjType.Zombie
+                16000, // doomEdNum
+                MobjState.ZombieStnd, // spawnState
+                20, // spawnHealth
+                MobjState.ZombieRun1, // seeState
+                Sfx.BGSIT1, // seeSound
+                4, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.TrooPain, // painState
+                170, // painChance
+                Sfx.NONE, // painSound
+                MobjState.ZombieAtk1, // meleeState
+                MobjState.Null, // missileState
+                MobjState.TrooDie1, // deathState
+                MobjState.TrooXdie1, // xdeathState
+                Sfx.BGDTH1, // deathSound
+                16, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(56), // height
+                100, // mass
+                0, // damage
+                Sfx.POSACT, // activeSound
+                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
+                MobjState.SposRaise1 // raiseState
+            ),
+
+            // Custom Dog Enemy
+
+            new MobjInfo( // MobjType.Dog
+                16001, // doomEdNum
+                MobjState.DogStnd, // spawnState
+                10, // spawnHealth
+                MobjState.DogRun1, // seeState
+                Sfx.SGTSIT, // seeSound
+                8, // reactionTime
+                Sfx.SGTATK, // attackSound
+                MobjState.SargPain, // painState
+                180, // painChance
+                Sfx.DMPAIN, // painSound
+                MobjState.DogAtk1, // meleeState
+                MobjState.Null, // missileState
+                MobjState.SargDie1, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.SGTDTH, // deathSound
+                24, // speed
+                Fixed.FromInt(30), // radius
+                Fixed.FromInt(56), // height
+                400, // mass
+                0, // damage
+                Sfx.DMACT, // activeSound
+                MobjFlags.Solid | MobjFlags.Shootable | MobjFlags.CountKill, // flags
+                MobjState.SargRaise1 // raiseState
+            ),
+
+            // Custom Powerup - Max Ammo
+
+            new MobjInfo( // MobjType.MaxAmmo
+                16020, // doomEdNum
+                MobjState.MaxAmmo, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                MobjFlags.Special, // flags
+                MobjState.Null // raiseState
+            ),
+
+            new MobjInfo( // MobjType.InstaKill
+                16021, // doomEdNum
+                MobjState.InstaKill, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                MobjFlags.Special, // flags
+                MobjState.Null // raiseState
+            ),
+
+            new MobjInfo( // MobjType.DoublePoints
+                16022, // doomEdNum
+                MobjState.DoublePoints, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                MobjFlags.Special, // flags
+                MobjState.Null // raiseState
+            ),
+
+            new MobjInfo( // MobjType.Nuke
+                16023, // doomEdNum
+                MobjState.Nuke, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                MobjFlags.Special, // flags
+                MobjState.Null // raiseState
+            ),
+
+            new MobjInfo( // MobjType.SpawnPoint
+                16030, // doomEdNum
+                MobjState.Nuke, // spawnState
+                1000, // spawnHealth
+                MobjState.Null, // seeState
+                Sfx.NONE, // seeSound
+                8, // reactionTime
+                Sfx.NONE, // attackSound
+                MobjState.Null, // painState
+                0, // painChance
+                Sfx.NONE, // painSound
+                MobjState.Null, // meleeState
+                MobjState.Null, // missileState
+                MobjState.Null, // deathState
+                MobjState.Null, // xdeathState
+                Sfx.NONE, // deathSound
+                0, // speed
+                Fixed.FromInt(20), // radius
+                Fixed.FromInt(16), // height
+                100, // mass
+                0, // damage
+                Sfx.NONE, // activeSound
+                0, // flags
+                MobjState.Null // raiseState
+            ),
 
         };
     }

@@ -16,6 +16,7 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace ManagedDoom
 {
@@ -170,14 +171,44 @@ namespace ManagedDoom
         private Fixed oldY;
         private Fixed oldZ;
 
+        private List<Vertex> vertexes;
+        private int limit;
+
+        private bool regen = false;
+        private int regenDelay = GameConst.TicRate * 5; // After player takes damage
+        private int regenRate = GameConst.TicRate / 10; // Delay between regen
+        private int regenAmount = 2;
+        private int regenWaitTimer = 0;
+
         public Mobj(World world)
         {
             
             this.world = world;
+            regen = world.Options.GameMode == GameMode.Zombies;
+
         }
 
         public override void Run()
         {
+
+            if ( regen && player != null) {
+
+                if ( health < 100 ) {
+
+                    regenWaitTimer--;
+                    if ( regenWaitTimer <= 0 ) {
+
+                        health += regenAmount;
+                        if ( health > 100 ) health = 100;
+                        player.Health = health;
+                        regenWaitTimer += regenRate;
+
+                    }
+
+                }
+
+            }
+
             // Momentum movement.
             if (momX != Fixed.Zero || momY != Fixed.Zero ||
                 (flags & MobjFlags.SkullFly) != 0)
@@ -566,10 +597,16 @@ namespace ManagedDoom
             set => flags = value;
         }
 
-        public int Health
-        {
+        public int Health {
+
             get => health;
-            set => health = value;
+            set {
+
+                if ( regen && value < health ) regenWaitTimer = regenDelay;
+                health = value;
+
+            }
+
         }
 
         public Direction MoveDir
@@ -624,6 +661,18 @@ namespace ManagedDoom
         {
             get => tracer;
             set => tracer = value;
+        }
+
+        public List<Vertex> Vertexes
+        {
+            get => vertexes;
+            set => vertexes = value;
+        }
+
+        public int Limit
+        {
+            get => limit;
+            set => limit = value;
         }
     }
 }
