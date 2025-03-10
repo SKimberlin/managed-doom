@@ -28,8 +28,7 @@ namespace ManagedDoom {
         private MobjType[] monsterTypes = {
 
             MobjType.Zombie,
-            MobjType.Zombie,
-            //MobjType.Dog, - Enable when implemented
+            MobjType.Dog,
 
         };
 
@@ -93,6 +92,13 @@ namespace ManagedDoom {
 
             monstersSpawned--;
             spawnedMobs.Remove( target );
+
+            if ( monsterSpawnCount != 0 || monstersSpawned != 0 ) return;
+
+            if ( wave % 5 != 0 ) return;
+
+            var item = world.ThingAllocation.SpawnMobj( target.X, target.Y, Mobj.OnFloorZ, MobjType.MaxAmmo );
+            item.Flags |= MobjFlags.Dropped;
 
         }
 
