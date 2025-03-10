@@ -23,12 +23,9 @@ namespace ManagedDoom
     {
         private World world;
 
-        private DoomMenu menu;
-
-        public ItemPickup(World world, DoomMenu menu)
+        public ItemPickup(World world)
         {
             this.world = world;
-            this.menu = menu;
         }
 
 
@@ -690,14 +687,14 @@ namespace ManagedDoom
                     break;
 
                 case Sprite.MGUN:
-                    menu.Shop(WeaponType.Chaingun, player);
-                    return;
-                    //if (!GiveWeapon(player, WeaponType.Chaingun, (special.Flags & MobjFlags.Dropped) != 0))
-                    //{
-                    //    return;
-                    //}
-                    //player.SendMessage(DoomInfo.Strings.GOTCHAINGUN);
-                    //sound = Sfx.WPNUP;
+                    //menu.Shop(WeaponType.Chaingun, player);
+                    //return;
+                    if (!GiveWeapon(player, WeaponType.Chaingun, (special.Flags & MobjFlags.Dropped) != 0))
+                    {
+                        return;
+                    }
+                    player.SendMessage(DoomInfo.Strings.GOTCHAINGUN);
+                    sound = Sfx.WPNUP;
                     break;
 
                 case Sprite.CSAW:

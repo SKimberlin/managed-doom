@@ -85,7 +85,7 @@ namespace ManagedDoom
             visibilityCheck = new VisibilityCheck(this);
             sectorAction = new SectorAction(this);
             playerBehavior = new PlayerBehavior(this);
-            itemPickup = new ItemPickup(this, menu);
+            itemPickup = new ItemPickup(this);
             weaponBehavior = new WeaponBehavior(this);
             monsterBehavior = new MonsterBehavior(this);
             lightingChange = new LightingChange(this);

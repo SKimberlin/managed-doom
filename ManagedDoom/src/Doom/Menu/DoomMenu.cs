@@ -484,9 +484,15 @@ namespace ManagedDoom
             StartSound(Sfx.SWTCHN);
         }
 
-        public void Shop(WeaponType weapon, Player player)
+        public void Shop(int w, Player player)
         {
-            testshop.SetUpShop("Buy " + weapon.ToString() + " for 10 credits?\n\n" + DoomInfo.Strings.PRESSYN,player);
+            WeaponType weapon = WeaponType.Shotgun;
+            string weaponString = "Shotgun";
+            int cost = 20;
+
+
+
+            testshop.SetUpShop("Buy " + weaponString + " for " + cost + " credits?\n\n" + DoomInfo.Strings.PRESSYN, player, () => Doom.Game.World.ItemPickup.GiveWeapon(player, weapon, false), cost);
 
             SetCurrent(testshop);
             Open();

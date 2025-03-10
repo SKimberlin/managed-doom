@@ -23,8 +23,9 @@ namespace ManagedDoom
     public sealed class ShopYesNoMenu : MenuDef
     {
         private string[] text;
-        //private Action action;
+        private Action action;
         private Player player;
+        private int cost;
 
         public ShopYesNoMenu(DoomMenu menu) : base(menu)
         {
@@ -32,11 +33,13 @@ namespace ManagedDoom
             //this.action = action;
         }
 
-        public void SetUpShop(string text, Player player)   
+        public void SetUpShop(string text, Player player, Action action, int cost)   
         {
             this.text = text.Split('\n');
             this.player = player;
-        }
+			this.action = action;
+            this.cost = cost;
+		}
 
         public override bool DoEvent(DoomEvent e)
         {
@@ -49,8 +52,16 @@ namespace ManagedDoom
                 e.Key == DoomKey.Enter ||
                 e.Key == DoomKey.Space)
             {
-                //action();
-                Menu.Close();
+                if (player.Currency >= cost)
+                {
+                    action();
+                    player.RemoveCurrency(cost);
+                    Menu.Close();
+                } 
+                else
+                {
+                    player.SendMessage("You Don't Have The Money Idiot");
+                }
                 Menu.StartSound(Sfx.PISTOL);
             }
 
