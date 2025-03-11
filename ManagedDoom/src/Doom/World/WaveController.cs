@@ -32,8 +32,8 @@ namespace ManagedDoom {
 
         };
 
-        private int currencyPerHit = 10;
-        private int currencyPerKill = 50;
+        private int currencyPerHit = 1;
+        private int currencyPerKill = 5;
 
         private World world;
         private List<MapThing> spawnPoints;
@@ -60,6 +60,8 @@ namespace ManagedDoom {
 
                 if ( thing.Type != 16030 ) continue;
 
+                if ( thing.X == Fixed.FromInt( 2144 ) )
+                    continue;
                 spawnPoints.Add( thing );
 
             }
@@ -218,7 +220,7 @@ namespace ManagedDoom {
 
             MapThing spawnPoint = spawnPoints[ new Random().Next( spawnPoints.Count ) ];
 
-            if ( !CheckOpenPoint( Fixed.FromInt( 30 ), spawnPoint.X, spawnPoint.Y ) ) return;
+            if ( !CheckOpenPoint( Fixed.FromInt( 100 ), spawnPoint.X, spawnPoint.Y ) ) return;
 
             var mobj = world.ThingAllocation.SpawnMobj( spawnPoint.X, spawnPoint.Y, Mobj.OnFloorZ, type );
             mobj.SpawnPoint = spawnPoint;
