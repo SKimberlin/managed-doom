@@ -2367,7 +2367,7 @@ namespace ManagedDoom
             int iter = 0;
             while (priorityQueue.Count > 0 && iter < 100)
             {
-                Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
+                //Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
 
                 current = priorityQueue.Dequeue();
 
