@@ -47,7 +47,7 @@ namespace ManagedDoom {
         private int doublePointsTime = GameConst.TicRate * 10;
         private int doublePointsStartTime;
 
-        private int nukePoints = 200;
+        private int nukePoints = 25;
 
 
 
@@ -197,6 +197,8 @@ namespace ManagedDoom {
         }
 
         private void StartWave() {
+
+            foreach ( Mobj mobj in spawnedMobs ) world.ThingInteraction.DamageMobj( mobj, null, null, mobj.Health );
 
             wave++;
             world.Options.Players[0].SendMessage( "Wave " + wave + " Starting..." );
