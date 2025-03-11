@@ -63,6 +63,12 @@ namespace ManagedDoom.Video
                 DrawText(yesNo.Text);
             }
 
+            var shopYesNo = menu.Current as ShopYesNoMenu;
+            if (shopYesNo != null)
+            {
+                DrawText(shopYesNo.Text);
+            }
+
             var pressAnyKey = menu.Current as PressAnyKey;
             if (pressAnyKey != null)
             {

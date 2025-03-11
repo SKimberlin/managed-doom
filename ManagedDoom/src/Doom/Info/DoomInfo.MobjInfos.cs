@@ -3646,7 +3646,7 @@ namespace ManagedDoom
             new MobjInfo( // MobjType.MaxAmmo
                 16020, // doomEdNum
                 MobjState.MaxAmmo, // spawnState
-                1000, // spawnHealth
+                10 * GameConst.TicRate, // spawnHealth
                 MobjState.Null, // seeState
                 Sfx.NONE, // seeSound
                 8, // reactionTime
@@ -3665,14 +3665,14 @@ namespace ManagedDoom
                 100, // mass
                 0, // damage
                 Sfx.NONE, // activeSound
-                MobjFlags.Special, // flags
+                MobjFlags.Special | MobjFlags.Decay, // flags
                 MobjState.Null // raiseState
             ),
 
             new MobjInfo( // MobjType.InstaKill
                 16021, // doomEdNum
                 MobjState.InstaKill, // spawnState
-                1000, // spawnHealth
+                10 * GameConst.TicRate, // spawnHealth
                 MobjState.Null, // seeState
                 Sfx.NONE, // seeSound
                 8, // reactionTime
@@ -3691,14 +3691,14 @@ namespace ManagedDoom
                 100, // mass
                 0, // damage
                 Sfx.NONE, // activeSound
-                MobjFlags.Special, // flags
+                MobjFlags.Special | MobjFlags.Decay, // flags
                 MobjState.Null // raiseState
             ),
 
             new MobjInfo( // MobjType.DoublePoints
                 16022, // doomEdNum
                 MobjState.DoublePoints, // spawnState
-                1000, // spawnHealth
+                10 * GameConst.TicRate, // spawnHealth
                 MobjState.Null, // seeState
                 Sfx.NONE, // seeSound
                 8, // reactionTime
@@ -3717,14 +3717,14 @@ namespace ManagedDoom
                 100, // mass
                 0, // damage
                 Sfx.NONE, // activeSound
-                MobjFlags.Special, // flags
+                MobjFlags.Special | MobjFlags.Decay, // flags
                 MobjState.Null // raiseState
             ),
 
             new MobjInfo( // MobjType.Nuke
                 16023, // doomEdNum
                 MobjState.Nuke, // spawnState
-                1000, // spawnHealth
+                10 * GameConst.TicRate, // spawnHealth
                 MobjState.Null, // seeState
                 Sfx.NONE, // seeSound
                 8, // reactionTime
@@ -3743,7 +3743,7 @@ namespace ManagedDoom
                 100, // mass
                 0, // damage
                 Sfx.NONE, // activeSound
-                MobjFlags.Special, // flags
+                MobjFlags.Special | MobjFlags.Decay, // flags
                 MobjState.Null // raiseState
             ),
 

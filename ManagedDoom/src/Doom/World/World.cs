@@ -65,7 +65,7 @@ namespace ManagedDoom
         // See SubstNullMobj().
         private Mobj dummy;
 
-        public World(GameContent resorces, GameOptions options, DoomGame game)
+        public World(GameContent resorces, GameOptions options, DoomGame game, DoomMenu menu)
         {
             this.options = options;
             this.game = game;
@@ -79,7 +79,7 @@ namespace ManagedDoom
             thingMovement = new ThingMovement(this);
             thingInteraction = new ThingInteraction(this);
             mapCollision = new MapCollision(this);
-            mapInteraction = new MapInteraction(this);
+            mapInteraction = new MapInteraction(this, menu);
             pathTraversal = new PathTraversal(this);
             hitscan = new Hitscan(this);
             visibilityCheck = new VisibilityCheck(this);

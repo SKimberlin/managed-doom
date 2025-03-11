@@ -163,6 +163,7 @@ namespace ManagedDoom
         INSK,
         DBPT,
         NUKE,
+        SHBY,
         Count,
     }
 }

@@ -38,6 +38,8 @@ namespace ManagedDoom
         private YesNoConfirm endGameConfirm;
         private QuitConfirm quitConfirm;
 
+        private ShopYesNoMenu testshop;
+
         private MenuDef current;
 
         private bool active;
@@ -48,9 +50,17 @@ namespace ManagedDoom
 
         private SaveSlots saveSlots;
 
+        public DoomMenu()
+        {
+
+        }
+
         public DoomMenu(Doom doom)
         {
             this.doom = doom;
+
+            testshop = new ShopYesNoMenu(
+                this);
 
             thisIsShareware = new PressAnyKey(
                 this,
@@ -472,6 +482,21 @@ namespace ManagedDoom
             SetCurrent(endGameConfirm);
             Open();
             StartSound(Sfx.SWTCHN);
+        }
+
+        public void Shop(int w, Player player)
+        {
+            WeaponType weapon = WeaponType.Shotgun;
+            string weaponString = "Shotgun";
+            int cost = 20;
+
+
+
+            testshop.SetUpShop("Buy " + weaponString + " for " + cost + " credits?\n\n" + DoomInfo.Strings.PRESSYN, player, () => Doom.Game.World.ItemPickup.GiveWeapon(player, weapon, false), cost);
+
+            SetCurrent(testshop);
+            Open();
+            StartSound(Sfx.TINK);
         }
 
         public void Quit()
