@@ -183,9 +183,12 @@ namespace ManagedDoom
 
 				case 11:
 					// Exit level.
-					// I am making this a shop right now
-					specials.ChangeSwitchTexture(line, true);
-					//world.ExitLevel();
+					specials.ChangeSwitchTexture(line, false);
+					world.ExitLevel();
+					break;
+
+				case 200:
+					// pull up weapon buy shop
 					menu.Shop(line.FrontSide.MiddleTexture, thing.Player);
 					break;
 
