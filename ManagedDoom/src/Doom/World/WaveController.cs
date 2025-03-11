@@ -230,6 +230,18 @@ namespace ManagedDoom {
 
         }
 
+        public bool Respawn(Mobj actor)
+        {
+            MapThing spawnPoint = spawnPoints[new Random().Next(spawnPoints.Count)];
+
+            if (!CheckOpenPoint(Fixed.FromInt(30), spawnPoint.X, spawnPoint.Y)) return false;
+
+            actor.X = spawnPoint.X;
+            actor.Y = spawnPoint.Y;
+            actor.Z = Mobj.OnFloorZ;
+            return true;
+        }
+
         private bool CheckOpenPoint( Fixed radius, Fixed x, Fixed y ) {
 
             var thinkers = world.Thinkers;

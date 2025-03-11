@@ -2151,6 +2151,12 @@ namespace ManagedDoom
 
             if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
             {
+                Console.WriteLine(actor.Limit);
+                if (actor.Limit > 5)
+                    if (world.Options.GameMode == GameMode.Zombies)
+                        if (world.WaveController.Respawn(actor))
+                            actor.Limit = 0;
+
                 if (actor.Vertexes == null || actor.Vertexes.Count == 0) AStar(actor);
                 else FollowPath(actor);   
 
@@ -2232,16 +2238,15 @@ namespace ManagedDoom
 
             var deltaX = actor.Vertexes[0].X - actor.X;
             var deltaY = actor.Vertexes[0].Y - actor.Y;
-            actor.Limit++;
+            
 
             //var deltaX = actor.X - actor.Vertexes[0].X;
             //var deltaY = actor.Y - actor.Vertexes[0].Y;
 
             // Remove vertex if close enough
-            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))) || actor.Limit > 1000)
+            if (Fixed.One * 9 > Fixed.Sqrt(Fixed.Abs((deltaX * deltaX) + (deltaY * deltaY))))
             {
                 actor.Vertexes.RemoveAt(0);
-                actor.Limit = 0;
                 if (actor.Vertexes.Count == 0)
                 {
                     actor.MoveDir = Direction.None;
@@ -2352,6 +2357,15 @@ namespace ManagedDoom
         public void AStar(Mobj actor)
         {
             if (actor.Target == null) return;
+            if ((actor.PreviousPosition.X == actor.X && actor.PreviousPosition.Y == actor.Y))
+            {
+                actor.Limit++;
+            }
+            else
+            {
+                actor.Limit = 0;
+            }
+
 
             Vertex start = new Vertex(actor.X, actor.Y);
             Vertex end = new Vertex(actor.Target.X, actor.Target.Y);
@@ -2367,8 +2381,6 @@ namespace ManagedDoom
             int iter = 0;
             while (priorityQueue.Count > 0 && iter < 100)
             {
-                Console.Out.WriteLine("Queue Size: " + priorityQueue.Count + " | Searched: " + visited.Count);
-
                 current = priorityQueue.Dequeue();
 
                 if (current.H < bestNode.H) 

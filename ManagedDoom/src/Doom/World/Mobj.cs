@@ -686,5 +686,10 @@ namespace ManagedDoom
             get => limit;
             set => limit = value;
         }
+
+        public Vertex PreviousPosition
+        {
+            get => new (oldX, oldY);
+        }
     }
 }
