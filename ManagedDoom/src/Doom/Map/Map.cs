@@ -72,7 +72,7 @@ namespace ManagedDoom
 
                 Console.Write("Load map '" + name + "': ");
 
-                var map = wad.GetLumpNumber(name);
+                var map = wad.GetLumpNumber("E1M1");
 
                 if (map == -1)
                 {
