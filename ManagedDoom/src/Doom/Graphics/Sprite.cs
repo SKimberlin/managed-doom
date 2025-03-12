@@ -164,6 +164,9 @@ namespace ManagedDoom
         DBPT,
         NUKE,
         SHBY,
+        MGBY,
+        RLBY,
+        CSBY,
         Count,
     }
 }
