@@ -72,7 +72,19 @@ namespace ManagedDoom
 
                 Console.Write("Load map '" + name + "': ");
 
-                var map = wad.GetLumpNumber("E1M1");
+                int map;
+
+                if (world.Options.GameMode == GameMode.Zombies) {
+
+
+                    map = wad.GetLumpNumber("E1M1");
+
+                } else {
+
+                    map = wad.GetLumpNumber( name );
+
+                }
+                    
 
                 if (map == -1)
                 {
