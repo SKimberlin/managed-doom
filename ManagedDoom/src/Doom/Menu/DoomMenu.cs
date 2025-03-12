@@ -486,7 +486,7 @@ namespace ManagedDoom
 
         public void Shop(int w, Player player)
         {
-            WeaponType weapon = WeaponType.NoChange;
+            WeaponType weapon = WeaponType.Chainsaw;
             string weaponString = "ERROR";
             int cost = 1;
 
