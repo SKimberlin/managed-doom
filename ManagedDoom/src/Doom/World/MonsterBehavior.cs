@@ -2151,11 +2151,7 @@ namespace ManagedDoom
 
             if (!world.VisibilityCheck.CheckSight(actor, actor.Target))
             {
-                Console.WriteLine(actor.Limit);
-                if (actor.Limit > 5)
-                    if (world.Options.GameMode == GameMode.Zombies)
-                        if (world.WaveController.Respawn(actor))
-                            actor.Limit = 0;
+                //Probably add respawn here
 
                 if (actor.Vertexes == null || actor.Vertexes.Count == 0) AStar(actor);
                 else FollowPath(actor);   
