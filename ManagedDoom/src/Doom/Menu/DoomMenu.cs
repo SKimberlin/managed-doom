@@ -500,12 +500,12 @@ namespace ManagedDoom
 					weaponString = "Shotgun";
 					cost = 350;
 					break;
-                case 2221:
+                case 126:
                     weapon = WeaponType.Chaingun;
                     weaponString = "Chaingun";
                     cost = 200;
                     break;
-                case 2222: // replace with Rocket Launcher number:
+                case 127: // replace with Rocket Launcher number:
                     weapon = WeaponType.Missile;
                     weaponString = "Rocket Launcher";
                     cost = 300;
@@ -520,7 +520,7 @@ namespace ManagedDoom
                     weaponString = "BFG";
 					cost = 2000;
 					break;
-				case 2225: // replace with Chainsaw number:
+				case 128: // replace with Chainsaw number:
                     weapon = WeaponType.Chainsaw;
 					weaponString = "Chainsaw";
 					cost = 1000;
