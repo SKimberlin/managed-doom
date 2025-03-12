@@ -165,7 +165,10 @@ namespace ManagedDoom
             new DoomString("INSK"),
             new DoomString("DBPT"),
             new DoomString("NUKE"),
-            new DoomString("SHOTBUY"),
+            new DoomString("SHBY"),
+            new DoomString("MGBY"),
+            new DoomString("RLBY"),
+            new DoomString("CSBY"),
         };
     }
 }

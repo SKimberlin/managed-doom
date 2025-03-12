@@ -203,7 +203,7 @@ namespace ManagedDoom
 
             }
 
-            if ( regen && player != null) {
+            if ( regen && health > 0 && player != null) {
 
                 if ( health < 100 ) {
 
